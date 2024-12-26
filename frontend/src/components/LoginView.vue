@@ -7,6 +7,8 @@ import "@/assets/login.css"
 const router = useRouter()
 const username = ref("")
 const password = ref("")
+const email = ref("")
+const isLogin = ref(true)
 
 const login = async () => {
   if (!username.value || !password.value) {
@@ -35,20 +37,23 @@ const register = async () => {
     return
   }
   try {
-    const res = await axios.post('http://localhost:8081/api/auth/register', {
+    await axios.post('http://localhost:8081/api/auth/register', {
       username: username.value,
       password: password.value,
-    })
-    if (res.data.code === 200) {
-      alert("注册成功，现在请进行登录")
-      window.location.reload()
-    }
+      email: email.value,
+    });
+    alert("注册成功，现在请进行登录")
+    window.location.reload()
   } catch (error) {
     if (error.response.status === 400)
       alert(error.response.data)
     else
       alert("注册失败: " + error.message)
   }
+}
+
+const toggleLR = (formType) => {
+  isLogin.value = formType === "login";
 }
 </script>
 
@@ -58,21 +63,45 @@ const register = async () => {
       <div>
         <h1>注册与登录</h1>
       </div>
-      <div class="input-container">
-        <label for="username">用户名:</label>
-        <input v-model="username" type="text" class="input-field"/>
-      </div>
-      <div class="input-container">
-        <label for="username">用户名:</label>
-        <input v-model="password" type="password" class="input-field"/>
-      </div>
+
+      <!-- 登录 / 注册选择 -->
       <div class="button-box">
         <div class="button-left-space"></div>
-        <button class="button" @click="login">登录</button>
+        <button class="button" @click="toggleLR('login')">登录</button>
         <div class="button-middle-space"></div>
-        <button class="button" @click="register">注册</button>
+        <button class="button" @click="toggleLR('register')">注册</button>
         <div class="button-right-space"></div>
       </div>
+
+
+      <div v-if="isLogin" class="login-box">
+        <div class="input-container">
+          <label for="username">用户名:</label>
+          <input v-model="username" type="text" class="input-field"/>
+        </div>
+        <div class="input-container">
+          <label for="password">密码:</label>
+          <input v-model="password" type="password" class="input-field"/>
+        </div>
+        <button class="button" @click="login">登录</button>
+      </div>
+      <div v-else class="login-box">
+        <div class="input-container">
+          <label for="username">用户名 : </label>
+          <input v-model="username" type="text" class="input-field"/>
+        </div>
+        <div class="input-container">
+          <label for="password">密码 : </label>
+          <input v-model="password" type="password" class="input-field"/>
+        </div>
+        <div class="input-container">
+          <label for="email">邮箱 : </label>
+          <input v-model="email" type="text" class="input-field"/>
+        </div>
+        <button class="button" @click="register">注册</button>
+      </div>
+
+
     </div>
   </div>
 </template>

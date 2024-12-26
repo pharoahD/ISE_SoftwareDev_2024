@@ -1,8 +1,8 @@
 .box {
-    position: fixed; /* 固定在视口 */
-    width: 300px; /* 宽度 200 像素 */
+    position: absolute; /* 固定在视口 */
+    width: 400px; /* 宽度 200 像素 */
     background-color: rgb(255, 255, 255); /* 半透明颜色 */
-    transform: translate(-50%, -50%); /* 中心对齐 */
+    transform: translate(-50%, -50%); /* 中心对其 */
     border-radius: 10px; /* 圆角处理 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
 }
@@ -23,6 +23,7 @@
 .input-container label {
     width: 70px;
     text-align: right;
+    white-space: nowrap;
 }
 
 .input-field {

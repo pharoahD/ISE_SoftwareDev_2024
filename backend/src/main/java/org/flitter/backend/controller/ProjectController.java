@@ -48,15 +48,10 @@ public class ProjectController {
         }
     }
 
-//    @PostMapping("/list")// 看到所有的项目列表
-//    public ResponseEntity<?> getProjectList() {
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        String username = auth.getName();
-//        User user = userService.findByUsername(username);
-//
-//        List<Project> list = projectService.getProjectByUser(user);
-//        return ResponseEntity.ok(list);
-//    }
+    @PostMapping("/list")// 看到所有的项目列表
+    public ResponseEntity<?> getProjectList() {
+        return ResponseEntity.ok(projectService.getAllProjects());
+    }
 
 //    @PostMapping("/search")//通过项目名称来查看具体项目信息
 //    public ResponseEntity<?> searchProjectByName(@RequestBody String name) {

@@ -1,6 +1,7 @@
 package org.flitter.backend.config;
 
-import org.flitter.backend.service.UserService;
+import org.flitter.backend.entity.User;
+import org.flitter.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +12,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,7 +32,7 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -38,7 +41,7 @@ public class SecurityConfig {
 
         // 配置访问
         http.authorizeHttpRequests(auth ->
-                auth.requestMatchers("/auth/**").permitAll()    // 开启登录
+                auth.requestMatchers("/api/auth/**").permitAll()    // 开启登录
                         .anyRequest().authenticated());
         // 不使用session
         http.sessionManagement(session ->
@@ -53,7 +56,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173"
+                "http://localhost:3000"
         ));
         configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -68,7 +71,7 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> {
-            var user = userService.findByUsername(username);
+            var user = userRepository.findByUsername(username);
             if (user == null) {
                 throw new UsernameNotFoundException("User not found");
             }
@@ -122,5 +125,19 @@ public class SecurityConfig {
             AuthenticationConfiguration config
     ) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    public User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            System.out.println("Username: " + auth.getName());
+        } else {
+            System.err.println("auth = null");
+        }
+        if (auth != null && auth.isAuthenticated()) {
+            String username = auth.getName();
+            return userRepository.findByUsername(username);
+        }
+        return null;
     }
 }

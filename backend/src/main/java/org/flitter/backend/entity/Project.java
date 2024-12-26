@@ -23,7 +23,7 @@ public class Project {
     private LocalDate startDate = LocalDate.now();  // 默认开始时间为当前时间
 
     @Column(nullable = false)
-    private LocalDate endDate;
+    private LocalDate endDate = LocalDate.now();
 
     @Column(nullable = false)
     private String description;
@@ -37,9 +37,13 @@ public class Project {
 
     @ManyToMany
     @JoinTable(
-            name="project_person",
+            name = "project_person",
             joinColumns = @JoinColumn(name = "project_id"),
             inverseJoinColumns = @JoinColumn(name = "person_id")
     )
     private Set<User> participants = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "creator_id")
+    private User creator;
 }

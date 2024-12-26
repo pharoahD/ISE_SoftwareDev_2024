@@ -1,5 +1,6 @@
 package org.flitter.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.flitter.backend.entity.enums.Role;
@@ -34,9 +35,11 @@ public class User {
 
     // 所属项目
     @ManyToMany(mappedBy = "participants")
+    @JsonIgnore
     private Set<Project> projects = new HashSet<>();
 
     // 被指定的任务
     @ManyToMany(mappedBy = "assignees")
+    @JsonIgnore
     private Set<Task> tasks = new HashSet<>();
 }

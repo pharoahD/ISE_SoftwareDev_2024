@@ -1,5 +1,6 @@
 package org.flitter.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.flitter.backend.entity.enums.Priority;
@@ -32,6 +33,10 @@ public class Project {
     @Column(nullable = false)
     private Priority priority;
 
+    @Column(nullable = false)
+    private Double progress = 0.0;
+
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Task> tasks = new HashSet<>();
 

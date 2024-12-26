@@ -1,6 +1,7 @@
 package org.flitter.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.flitter.backend.entity.enums.Role;
@@ -23,6 +24,7 @@ public class User {
 
     // 密码 加密存储
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Column(nullable = false)

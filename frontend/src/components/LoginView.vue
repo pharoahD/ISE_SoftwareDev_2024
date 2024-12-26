@@ -100,8 +100,6 @@ const toggleLR = (formType) => {
         </div>
         <button class="button" @click="register">注册</button>
       </div>
-
-
     </div>
   </div>
 </template>

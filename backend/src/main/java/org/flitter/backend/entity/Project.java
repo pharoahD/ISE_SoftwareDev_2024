@@ -40,6 +40,10 @@ public class Project {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Task> tasks = new HashSet<>();
 
+    @Column(nullable = false)
+    private Boolean isCompleted = false;   //工程是否完成
+
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "project_person",

@@ -1,0 +1,65 @@
+.box {
+    position: fixed; /* 固定在视口 */
+    width: 300px; /* 宽度 200 像素 */
+    background-color: rgb(255, 255, 255); /* 半透明颜色 */
+    transform: translate(-50%, -50%); /* 中心对齐 */
+    border-radius: 10px; /* 圆角处理 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
+}
+
+.login-box {
+    display: grid;
+    padding: 24px;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.input-container label {
+    width: 70px;
+    text-align: right;
+}
+
+.input-field {
+    width: 100%; /* 输入框占据剩余空间 */
+    padding: 8px;
+    margin-left: 10px; /* 稍微调整输入框与标签之间的距离 */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.button-box {
+    display: flex;
+    justify-content: space-between;
+}
+
+.button-left-space {
+    flex: 0 0 10%;
+}
+
+.button-middle-space {
+    flex: 0 0 20%;
+}
+
+.button-right-space {
+    flex: 0 0 10%;
+}
+
+.button {
+    flex-grow: 1;
+    height: 100%; /* 设置高度 */
+    background-color: #4CAF50;
+    color: white;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}

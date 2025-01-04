@@ -1,12 +1,16 @@
 package org.flitter.backend.service;
 
+import jakarta.transaction.Transactional;
 import org.flitter.backend.config.SecurityConfig;
+import org.flitter.backend.dto.ProjectListDTO;
 import org.flitter.backend.entity.Project;
 import org.flitter.backend.entity.User;
+import org.flitter.backend.entity.enums.Role;
 import org.flitter.backend.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -29,6 +33,7 @@ public class ProjectService {
         }
     }
 
+    @Transactional
     public Project createProject(Project project) {
         User currentUser = securityConfig.getCurrentUser();
         project.setCreator(currentUser);
@@ -45,13 +50,24 @@ public class ProjectService {
         project.setPriority(project.getPriority());
 
         project.setIsCompleted(false);
+        if (project.getParticipants() == null) {
+            project.setParticipants(new HashSet<>());
+        }
+        project.getParticipants().add(currentUser);
 
+        System.err.println("participants size: " + project.getParticipants().size());
         projectRepository.save(project);
         return project;
     }
 
-    public List<Project> getAllProjects() {
+    @Transactional
+    public List<ProjectListDTO> getAllProjects() {
         User currentUser = securityConfig.getCurrentUser();
-        return projectRepository.findProjectByParticipantsContains(currentUser);
+        if (currentUser != null && currentUser.getRole() == Role.ADMIN) {
+            return projectRepository.findAllProjectsDTO();
+        }
+        System.err.println(projectRepository.findProjectListDTOByParticipant(currentUser));
+//        System.err.println(projectRepository.findProjectByCreator(currentUser));
+        return projectRepository.findProjectListDTOByParticipant(currentUser);
     }
 }

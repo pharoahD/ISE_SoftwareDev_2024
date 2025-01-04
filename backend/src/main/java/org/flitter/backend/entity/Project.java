@@ -6,7 +6,9 @@ import lombok.Data;
 import org.flitter.backend.entity.enums.Priority;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -43,8 +45,8 @@ public class Project {
     @Column(nullable = false)
     private Boolean isCompleted = false;   //工程是否完成
 
-    @JsonIgnore
     @ManyToMany
+    @JsonIgnore
     @JoinTable(
             name = "project_person",
             joinColumns = @JoinColumn(name = "project_id"),
@@ -55,4 +57,8 @@ public class Project {
     @ManyToOne
     @JoinColumn(name = "creator_id")
     private User creator;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "belongsToProject")
+    @JsonIgnore
+    private List<Document> documents = new ArrayList<>();
 }

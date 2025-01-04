@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +22,8 @@ public class UserService {
 
     @Autowired
     public UserService(UserRepository userRepository,
-                       BCryptPasswordEncoder bCryptPasswordEncoder, AuthenticationManager authenticationManager) {
+                       BCryptPasswordEncoder bCryptPasswordEncoder,
+                       AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.authenticationManager = authenticationManager;
@@ -52,12 +55,13 @@ public class UserService {
 
     public void authenticateUser(User loginRequest) {
         try {
-            authenticationManager.authenticate(
+            Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getUsername(),
                             loginRequest.getPassword()
                     )
             );
+            SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("用户名或者密码不正确");
         }
@@ -69,7 +73,7 @@ public class UserService {
             User user = new User();
             user.setUsername("System");
             user.setEmail("System@system.com");
-            user.setPassword("System@oejfioanewiotwoinoigrhorojreqiw");
+            user.setPassword(bCryptPasswordEncoder.encode("system11223344556677"));
             user.setRole(Role.ADMIN);
             userRepository.save(user);
         }

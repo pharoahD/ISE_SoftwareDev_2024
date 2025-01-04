@@ -25,7 +25,7 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
             userService.registerUser(user);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -46,3 +46,5 @@ public class AuthController {
         }
     }
 }
+
+

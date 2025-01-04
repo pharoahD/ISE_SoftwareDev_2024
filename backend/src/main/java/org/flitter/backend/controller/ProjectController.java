@@ -66,7 +66,6 @@ public class ProjectController {
     @GetMapping("/get")
     public ResponseEntity<?> getProjectById(@RequestBody Long id) {
         User cuser = securityConfig.getCurrentUser();
-
         Project project = projectService.getProject(id);
         if (project == null) {
             return ResponseEntity.notFound().build();

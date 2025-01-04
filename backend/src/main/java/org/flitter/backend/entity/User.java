@@ -44,4 +44,18 @@ public class User {
     @ManyToMany(mappedBy = "assignees")
     @JsonIgnore
     private Set<Task> tasks = new HashSet<>();
+
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;  // 使用id计算hashCode
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;  // 如果引用相同返回true
+        if (obj == null || getClass() != obj.getClass()) return false;  // 类型检查
+        User user = (User) obj;
+        return id != null && id.equals(user.id);
+    }
 }

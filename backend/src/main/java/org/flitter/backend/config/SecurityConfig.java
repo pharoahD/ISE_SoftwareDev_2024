@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,36 +30,41 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    public SecurityConfig(@Autowired UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
-        http.cors(Customizer.withDefaults());
-
+        http.cors(cors -> cors.configurationSource(
+                corsConfigurationSource()
+        ));
+//        http.formLogin(Customizer.withDefaults());
         // 配置访问
         http.authorizeHttpRequests(auth ->
                 auth.requestMatchers("/api/auth/**").permitAll()    // 开启登录
+                        .requestMatchers("/api/project/**").hasRole("USER") // 仅用户角色可访问项目接口
                         .anyRequest().authenticated());
-        // 不使用session
-        http.sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // 使用http basic
-        http.httpBasic(Customizer.withDefaults());
+        http.sessionManagement(session -> {
+                    session.maximumSessions(1);
+                    session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
+                });
+        http.securityContext(securityContext -> securityContext.requireExplicitSave(false));
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000"
+                "http://localhost"
         ));
-        configuration.setAllowedMethods(Collections.singletonList("*"));
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
-        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "OPTIONS", "PUT", "DELETE"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -129,13 +133,9 @@ public class SecurityConfig {
 
     public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            System.out.println("Username: " + auth.getName());
-        } else {
-            System.err.println("auth = null");
-        }
         if (auth != null && auth.isAuthenticated()) {
             String username = auth.getName();
+            System.err.println(username);
             return userRepository.findByUsername(username);
         }
         return null;

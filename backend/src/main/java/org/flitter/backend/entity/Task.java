@@ -1,5 +1,6 @@
 package org.flitter.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -9,7 +10,7 @@ import java.util.Set;
 
 @Data
 @Entity
-@Table(name = "tasks")
+@Table(name = "task")
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,15 +31,13 @@ public class Task {
     private User publisher;
 
     @ManyToMany
+    @JsonIgnore
     @JoinTable(
             name = "task_person",
             joinColumns = @JoinColumn(name = "task_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> assignees = new HashSet<>();
-
-    @Column(nullable = false)
-    private Double status;
 
     @Column(nullable = false)
     private LocalDate startDate;

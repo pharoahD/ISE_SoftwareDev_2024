@@ -3,11 +3,11 @@ package org.flitter.backend.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name="messages")
+@Table(name="message")
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,12 +22,12 @@ public class Message {
     private User author; //发送方
 
     @Column(nullable = false)
-    private LocalDate date;  //发送日期
+    private LocalDateTime datetime;  //发送日期
 
     @ManyToOne
     @JoinColumn(name= "receiver_id", nullable = false)
     private User receiver;  //接收方
 
     @Column(nullable = false)
-    private String readed;
+    private String isRead;
 }

@@ -5,6 +5,8 @@
     transform: translate(-50%, -50%); /* 中心对其 */
     border-radius: 10px; /* 圆角处理 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
+    align-content: center;
+    left: 50%;
 }
 
 .login-box {

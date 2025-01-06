@@ -1,0 +1,60 @@
+.project-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.project-table {
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.el-table th {
+    background-color: #f1f1f1;
+    color: #333;
+    font-weight: bold;
+    text-align: center;
+}
+
+.el-table td {
+    text-align: center;
+}
+
+.el-table .el-button {
+    background-color: #409eff;
+    border-color: #409eff;
+    color: white;
+    padding: 5px 15px;
+}
+
+.el-table .el-button:hover {
+    background-color: #66b1ff;
+    border-color: #66b1ff;
+}
+
+.loading-message {
+    text-align: center;
+    font-size: 18px;
+    color: #666;
+    margin-top: 50px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .project-container {
+        padding: 10px;
+    }
+
+    .el-table-column {
+        font-size: 12px;
+    }
+
+    .el-button {
+        padding: 3px 10px;
+    }
+}

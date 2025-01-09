@@ -67,6 +67,7 @@ public class ProjectService {
 
     @Transactional
     public List<ProjectListDTO> getAllProjects() {
+        System.err.println("getAllProjects : " + projectRepository.findAllProjectsDTO());
         return projectRepository.findAllProjectsDTO();
     }
 

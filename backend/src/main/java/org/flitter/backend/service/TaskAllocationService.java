@@ -1,6 +1,7 @@
 package org.flitter.backend.service;
 
 import org.flitter.backend.config.SecurityConfig;
+import org.flitter.backend.dto.TaskForGanttDTO;
 import org.flitter.backend.entity.Project;
 import org.flitter.backend.entity.Task;
 import org.flitter.backend.entity.User;
@@ -10,6 +11,8 @@ import org.flitter.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.flitter.backend.entity.PreSendingMessage;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -41,10 +44,21 @@ public class TaskAllocationService{
         //判断权限
 
         //校验任务的分配人信息是否有效
-        for(User assignee : task.getAssignees()) {
-            if(assignee == null|| assignee.getId()==null){
-                throw new IllegalArgumentException("任务的分配人信息不完整");
+        for (User assignee : taskAss.getAssignees()) {
+            if (assignee == null) {
+                throw new IllegalArgumentException("任务的分配人信息不能为空");
             }
+
+            // 校验assignee是否有有效的id
+            if (assignee.getId() == null) {
+                throw new IllegalArgumentException("任务的分配人信息不完整：缺少用户ID");
+            }
+
+            // 校验assignee是否已存在于数据库
+//            User existingUser = userRepository.findById(assignee.getId()).orElse(null);
+//            if (existingUser == null) {
+//                throw new IllegalArgumentException("任务的分配人 " + assignee.getId() + " 不存在");
+//            }
         }
 
         //如果前端没有输入发布者信息，那就把当前操作人当成发布人
@@ -125,5 +139,25 @@ public class TaskAllocationService{
         preSendingMessage.setUserIds(taskUser);
         preSendingMessage.setTime(task.getStartDate());
         preSendingMessage.setCreatedAt(task.getEndDate());
+    }
+
+    public List<TaskForGanttDTO> getGanttElement(Long id) {
+        User user = securityConfig.getCurrentUser();
+        //权限判断
+
+        //查看输入的项目id是否有效
+        Project project = projectRepository.findById(id).orElse(null);
+        if(project == null) {
+            throw new IllegalArgumentException("没有找到对应的项目,您输入的项目id不正确");
+        }
+
+        List<Task> tasks = taskRepository.findByBelongedProjectId(id);
+
+
+        List<TaskForGanttDTO> taskGantt = new ArrayList<>();
+
+
+        return taskGantt;
+
     }
 }

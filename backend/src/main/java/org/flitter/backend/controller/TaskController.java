@@ -3,6 +3,7 @@ package org.flitter.backend.controller;
 import lombok.Data;
 import org.flitter.backend.config.SecurityConfig;
 import org.flitter.backend.dto.TaskAssigneeDTO;
+import org.flitter.backend.dto.TaskForGanttDTO;
 import org.flitter.backend.service.TaskAllocationService;
 import org.flitter.backend.entity.Task;
 import org.flitter.backend.entity.User;
@@ -45,8 +46,7 @@ public class TaskController {
         if (task.getAssignees() == null) {
             return ResponseEntity.badRequest().body("任务的分配人信息不能为空");
         }
-        System.out.println(task.getBelongedProject());
-        if (task.getBelongedProject() == null) {
+        if (taskAssigneeDTO.getBelongedProject() == null) {
             return ResponseEntity.badRequest().body("任务所属的项目不能为空");
         }
         try {
@@ -148,6 +148,18 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    @GetMapping("/gantti")
-    public ResponseEntity<?> getGantt
+    //通过输入项目编号，获取需要绘画该项目的甘特图所需的任务列表
+//    @GetMapping("/gantt")
+//    public ResponseEntity<?> getGantt(@RequestParam Long id) {
+//        User user = SecurityConfig.getCurrentUser();
+//        List<TaskForGanttDTO> tasks;
+//
+//        try{
+//            tasks = TaskAllocation.getGanttElement(id);
+//        }catch(IllegalArgumentException e){
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//
+//        return ResponseEntity.ok(tasks);
+//    }
 }

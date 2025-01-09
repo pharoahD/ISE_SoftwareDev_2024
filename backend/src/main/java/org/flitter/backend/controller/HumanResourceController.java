@@ -31,6 +31,9 @@ public class HumanResourceController {
         }
         return ResponseEntity.ok(humanresourceService.searchUserIdNameLimit1000(usdto.getUsername()));
     }
+
+    @PostMapping("/byproject")
+
     
     @GetMapping("/role/all")
     public ResponseEntity<?> allPriority() {

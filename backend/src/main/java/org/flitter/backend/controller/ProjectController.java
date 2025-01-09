@@ -49,11 +49,13 @@ public class ProjectController {
 
     @GetMapping("/list/all")// 看到所有的项目列表
     public ResponseEntity<?> getProjectList() {
+        System.err.println(projectService.getAllProjects());
         return ResponseEntity.ok(projectService.getAllProjects());
     }
 
     @GetMapping("/list/participated")
     public ResponseEntity<?> getParticipatedProjects() {
+        System.err.println("participanted : " + projectService.getAllProjects());
         return ResponseEntity.ok(projectService.getAllParticipatedProjects());
     }
 

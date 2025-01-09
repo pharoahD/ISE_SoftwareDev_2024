@@ -21,7 +21,7 @@ const login = async () => {
       password: password.value,
     })
     alert(res.data)
-    await router.push('/project')   // 登录成功后转到任务列表
+    await router.push('/project/list')   // 登录成功后转到任务列表
   } catch (error) {
     if (error.response.status === 401) {
       alert("登陆失败，请检查用户名或者密码是否正确")

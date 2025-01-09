@@ -20,7 +20,7 @@ const projects = ref([]);
 // 获取项目列表
 const fetchProjects = async () => {
   try {
-    const response = await axios.get('http://localhost:8081/api/list/participated'); // 获取项目列表
+    const response = await axios.get('http://localhost:8081/api/project/list/all'); // 获取项目列表
     projects.value = response.data.map(project => ({
       id: project.id,
       projectName: project.projectName // 映射项目名称
@@ -30,9 +30,6 @@ const fetchProjects = async () => {
   }
 };
 
-// 获取当前登录用户的信息（假设存在localStorage中）
-const currentUser = JSON.parse(localStorage.getItem('user')) || {};  // 获取当前登录用户的信息
-const publisherId = ref(currentUser.id || 1);  // 如果没有获取到用户信息，默认设置为1
 
 // 获取用户列表
 const fetchUsers = async () => {
@@ -68,9 +65,6 @@ const createTask = async () => {
     belongedProject: {
       id: selectedProjectId.value,  // 获取选中的项目ID
     },
-    publisher: {
-      id: publisherId.value,  // 获取当前登录用户的ID
-    },
     assignees: assignedMembers.value.map(member => ({
       id: member.id,  // 确保 assignedMembers 是成员对象数组，每个成员对象包含 id
     })),
@@ -78,10 +72,10 @@ const createTask = async () => {
 
   try {
     await axios.post('http://localhost:8081/api/task/allocation', requestData);
-    ElMessage.success('任务创建成功');
+    alert('任务创建成功');
     await router.push(''); // 跳转到任务列表页
   } catch (error) {
-    ElMessage.error('创建任务失败');
+    alert('创建任务失败');
   }
 };
 

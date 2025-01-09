@@ -3,22 +3,19 @@ package org.flitter.backend.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
-import org.flitter.backend.entity.User;
 import org.flitter.backend.entity.enums.Priority;
 
 import java.time.LocalDate;
 
 @Data
-@ToString
 @AllArgsConstructor
-public class ProjectListDTO {
+@ToString
+public class ProjectCreateDTO {
     private Long id;
-    private String projectName;
+    private String name;
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;
     private Priority priority;
-    private Double progress;
-    private Boolean isCompleted;
-    private User manager;
+    private Long managerId;
 }

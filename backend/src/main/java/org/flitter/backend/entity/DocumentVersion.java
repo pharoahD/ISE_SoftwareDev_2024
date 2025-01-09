@@ -20,7 +20,7 @@ public class DocumentVersion {
     private LocalDateTime uploadTime;
 
     @Lob
-    @Column(columnDefinition = "BLOB")
+    @Column(columnDefinition = "MEDIUMBLOB")        // 最大16MB
     private byte[] fileData;
 
     @ManyToOne

@@ -1,5 +1,6 @@
 package org.flitter.backend.repository;
 
+import org.flitter.backend.dto.UserIDRoleDTO;
 import org.flitter.backend.entity.User;
 
 import org.flitter.backend.dto.UserNameIdDTO;
@@ -22,4 +23,8 @@ public interface UserRepository extends CrudRepository<User, Long> {
     @Query("SELECT new org.flitter.backend.dto.UserNameIdDTO(p.id, p.username) FROM User p " +
             "WHERE p.username like :name and p.id <> 1")
     List<UserNameIdDTO> searchUserByUsernameLike(String name, Pageable pageable);
+
+    @Query("SELECT new org.flitter.backend.dto.UserIDRoleDTO(p.id, p.username, p.role) FROM User p " +
+            "WHERE p.id <> 1")
+    List<UserIDRoleDTO> findAllUserIDRole(Pageable pageable);
 }

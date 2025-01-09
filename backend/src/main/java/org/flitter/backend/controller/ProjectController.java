@@ -1,8 +1,6 @@
 package org.flitter.backend.controller;
 
-import org.flitter.backend.config.SecurityConfig;
-import org.flitter.backend.entity.User;
-import org.flitter.backend.entity.Project;
+import org.flitter.backend.dto.ProjectCreateDTO;
 import org.flitter.backend.entity.enums.Priority;
 import org.flitter.backend.service.ProjectService;
 
@@ -14,17 +12,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/project")
 public class ProjectController {
     private final ProjectService projectService;
-    private final SecurityConfig securityConfig;
 
-    ProjectController(@Autowired ProjectService projectService,
-                      @Autowired SecurityConfig securityConfig) {
+    ProjectController(@Autowired ProjectService projectService) {
         this.projectService = projectService;
-        this.securityConfig = securityConfig;
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(@RequestBody Project project) {
-        if (project.getProjectName() == null || project.getProjectName().isEmpty() ||
+    public ResponseEntity<?> create(@RequestBody ProjectCreateDTO project) {
+        if (project.getName() == null || project.getName().isEmpty() ||
                 project.getDescription() == null || project.getDescription().isEmpty()) {
             return ResponseEntity.badRequest().body("项目名称和描述不能为空");
         }
@@ -34,6 +29,10 @@ public class ProjectController {
         if (project.getStartDate() == null || project.getEndDate() == null) {
             return ResponseEntity.badRequest().body("项目开始截止日期不能为空");
         }
+        if (project.getManagerId() == null) {
+            return ResponseEntity.badRequest().body("负责人ID不能为空");
+        }
+
         try {
             Priority.valueOf(project.getPriority().toString());
         } catch (Exception e) {
@@ -48,9 +47,14 @@ public class ProjectController {
         }
     }
 
-    @PostMapping("/list")// 看到所有的项目列表
+    @GetMapping("/list/all")// 看到所有的项目列表
     public ResponseEntity<?> getProjectList() {
         return ResponseEntity.ok(projectService.getAllProjects());
+    }
+
+    @GetMapping("/list/participated")
+    public ResponseEntity<?> getParticipatedProjects() {
+        return ResponseEntity.ok(projectService.getAllParticipatedProjects());
     }
 
 //    @PostMapping("/search")//通过项目名称来查看具体项目信息
@@ -63,17 +67,17 @@ public class ProjectController {
 //        }
 //    }
 
-    @GetMapping("/get")
-    public ResponseEntity<?> getProjectById(@RequestBody Long id) {
-        User cuser = securityConfig.getCurrentUser();
-        Project project = projectService.getProject(id);
-        if (project == null) {
-            return ResponseEntity.notFound().build();
-        }
-        // 进行鉴权？
-        if (!project.getParticipants().contains(cuser)) {
-            return ResponseEntity.status(403).build();
-        }
-        return ResponseEntity.ok(project);
-    }
+//    @GetMapping("/get")
+//    public ResponseEntity<?> getProjectById(@RequestBody Long id) {
+//        User cuser = securityConfig.getCurrentUser();
+//        Project project = projectService.getProject(id);
+//        if (project == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        // 进行鉴权？
+//        if (!project.getParticipants().contains(cuser)) {
+//            return ResponseEntity.status(403).build();
+//        }
+//        return ResponseEntity.ok(project);
+//    }
 }

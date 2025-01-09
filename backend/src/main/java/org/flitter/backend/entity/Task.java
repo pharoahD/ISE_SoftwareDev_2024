@@ -23,6 +23,7 @@ public class Task {
     private String description;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "project_id")
     private Project belongedProject;
 
@@ -44,4 +45,8 @@ public class Task {
 
     @Column(nullable = false)
     private LocalDate endDate;
+
+//    @OneToMany(map
+    // TODO:  相关的commentdapter
+
 }

@@ -1,21 +1,46 @@
 <script setup>
-import {ref, onMounted} from "vue";
+import {ref, onMounted, inject} from "vue";
 import axios from "axios";
+import "@/assets/project.css"
+import http from "@/http/request.js";
+import {useRouter} from "vue-router";
+
 
 let projects = ref([]);
+const router = useRouter()
+const showMessage = inject("showMessage");
+const showError = inject("showError");
+
+const priorityMapping = {
+  LOW: "低",
+  MEDIUM: "中",
+  HIGH: "高",
+};
+
+const mapPriority = (priority) => {
+  return priorityMapping[priority] || "未知";
+};
+
 const fetchAllProjects = async () => {
   try {
-    const response = await axios.post("http://localhost:8081/api/project/list");
-    projects = [...response.data];
-    console.log(projects);
+    const response = (await http.get("http://localhost:8081/api/project/list/all")).data;
+    projects.value = response || [];
   } catch (error) {
-    alert("获取项目失败" + error.message);
+    showError("获取项目失败" + error.message);
+    window.location.href = "http://localhost/login";
   }
-}
+};
 
+
+// 选择任务，跳转到任务详情页面
 const selectRow = async (row) => {
-  alert("you selected: " + row.id);
-}
+  // 跳转到任务详情页，传递项目的 ID
+  showMessage("正在进入项目: " + row.projectName);
+  await router.push({
+    name: "ProjectDetail",
+    params: { id: row.id }
+  })
+};
 
 onMounted(async () => {
   await fetchAllProjects();
@@ -29,17 +54,21 @@ onMounted(async () => {
       <el-table-column prop="startDate" label="开始时间" width="150"/>
       <el-table-column prop="endDate" label="截止时间" width="150"/>
       <el-table-column prop="description" label="项目描述" width="300"/>
-      <el-table-column prop="priority" label="优先级" width="120"/>
+      <el-table-column prop="priority" label="优先级" width="120">
+        <template #default="scope">
+          <span>{{ mapPriority(scope.row.priority) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="isCompleted" label="完成情况" width="120">
         <template #default="{ row }">
           <span>{{ row.isCompleted ? '是' : '否' }}</span>
         </template>
       </el-table-column>
       <el-table-column prop="progress" label="进度" width="120"/>
-      <el-table-column fixed="right" label="操作" min-width="120">
+      <el-table-column fixed="right" label="进入项目" min-width="120">
         <template #default="{ row }">
           <el-button link type="primary" size="small" @click="selectRow(row)">
-            选择
+            *
           </el-button>
         </template>
       </el-table-column>

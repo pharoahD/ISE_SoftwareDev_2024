@@ -55,8 +55,8 @@ public class Project {
     private Set<User> participants = new HashSet<>();
 
     @ManyToOne
-    @JoinColumn(name = "creator_id")
-    private User creator;
+    @JoinColumn(name = "manager_id")
+    private User manager;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "belongsToProject")
     @JsonIgnore

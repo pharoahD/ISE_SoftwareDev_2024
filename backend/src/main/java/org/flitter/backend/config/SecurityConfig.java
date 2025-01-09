@@ -45,8 +45,8 @@ public class SecurityConfig {
         // 配置访问
         http.authorizeHttpRequests(auth ->
                 auth.requestMatchers("/api/auth/**").permitAll()    // 开启登录
-                        .requestMatchers("/api/project/**").hasRole("USER") // 仅用户角色可访问项目接口
-                        .requestMatchers("/api/user/**").hasRole("USER")
+                        .requestMatchers("/api/project/**").authenticated() // 仅用户角色可访问项目接口
+                        .requestMatchers("/api/user/**").authenticated()
                         .anyRequest().authenticated());
 
         http.sessionManagement(session -> {

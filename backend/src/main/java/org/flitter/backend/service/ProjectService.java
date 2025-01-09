@@ -2,11 +2,12 @@ package org.flitter.backend.service;
 
 import jakarta.transaction.Transactional;
 import org.flitter.backend.config.SecurityConfig;
+import org.flitter.backend.dto.ProjectCreateDTO;
 import org.flitter.backend.dto.ProjectListDTO;
 import org.flitter.backend.entity.Project;
 import org.flitter.backend.entity.User;
-import org.flitter.backend.entity.enums.Role;
 import org.flitter.backend.repository.ProjectRepository;
+import org.flitter.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +18,15 @@ import java.util.List;
 public class ProjectService {
     private final ProjectRepository projectRepository;
     private final SecurityConfig securityConfig;
+    private final UserRepository userRepository;
 
     @Autowired
     public ProjectService(ProjectRepository projectRepository,
-                          SecurityConfig securityConfig) {
+                          SecurityConfig securityConfig,
+                          UserRepository userRepository) {
         this.projectRepository = projectRepository; // service可以做业务逻辑
         this.securityConfig = securityConfig;
+        this.userRepository = userRepository;
     }
 
     public Project getProject(Long id) {
@@ -34,40 +38,41 @@ public class ProjectService {
     }
 
     @Transactional
-    public Project createProject(Project project) {
-        User currentUser = securityConfig.getCurrentUser();
-        project.setCreator(currentUser);
+    public Project createProject(ProjectCreateDTO projectCreate) {
+        Project project = new Project();
 
-        Project exitsProject = projectRepository.findProjectByProjectName(project.getProjectName());
+        Project exitsProject = projectRepository.findProjectByProjectName(projectCreate.getName());
         if (exitsProject != null) {
             throw new IllegalArgumentException("项目名已经被使用过了");
         }
-
-        project.setProjectName(project.getProjectName());
-        project.setStartDate(project.getStartDate());
-        project.setEndDate(project.getEndDate());
-        project.setDescription(project.getDescription());
-        project.setPriority(project.getPriority());
+        User manager = userRepository.findById(projectCreate.getManagerId()).orElse(null);
+        if (manager == null) {
+            throw new IllegalArgumentException("负责人的ID无效");
+        }
+        project.setManager(manager);
+        project.setProjectName(projectCreate.getName());
+        project.setStartDate(projectCreate.getStartDate());
+        project.setEndDate(projectCreate.getEndDate());
+        project.setDescription(projectCreate.getDescription());
+        project.setPriority(projectCreate.getPriority());
 
         project.setIsCompleted(false);
         if (project.getParticipants() == null) {
             project.setParticipants(new HashSet<>());
         }
-        project.getParticipants().add(currentUser);
 
-        System.err.println("participants size: " + project.getParticipants().size());
         projectRepository.save(project);
         return project;
     }
 
     @Transactional
     public List<ProjectListDTO> getAllProjects() {
+        return projectRepository.findAllProjectsDTO();
+    }
+
+    @Transactional
+    public List<ProjectListDTO> getAllParticipatedProjects() {
         User currentUser = securityConfig.getCurrentUser();
-        if (currentUser != null && currentUser.getRole() == Role.ADMIN) {
-            return projectRepository.findAllProjectsDTO();
-        }
-        System.err.println(projectRepository.findProjectListDTOByParticipant(currentUser));
-//        System.err.println(projectRepository.findProjectByCreator(currentUser));
         return projectRepository.findProjectListDTOByParticipant(currentUser);
     }
 }

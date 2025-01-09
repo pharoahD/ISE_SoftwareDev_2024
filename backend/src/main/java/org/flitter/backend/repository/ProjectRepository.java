@@ -17,13 +17,13 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     @Query("SELECT new org.flitter.backend.dto.ProjectListDTO(p.id, p.projectName," +
             "p.description, p.startDate, p.endDate, p.priority, p.progress," +
-            "p.isCompleted, p.creator) FROM Project p JOIN p.participants u " +
+            "p.isCompleted, p.manager) FROM Project p JOIN p.participants u " +
             "WHERE u = :user")
     List<ProjectListDTO> findProjectListDTOByParticipant(@Param("user") User user);
 
     @Query("SELECT new org.flitter.backend.dto.ProjectListDTO(p.id, p.projectName, " +
             "p.description, p.startDate, p.endDate, p.priority, p.progress, " +
-            "p.isCompleted, p.creator) FROM Project p")
+            "p.isCompleted, p.manager) FROM Project p")
     List<ProjectListDTO> findAllProjectsDTO();
 }
 

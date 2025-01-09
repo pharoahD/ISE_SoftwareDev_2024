@@ -1,12 +1,22 @@
 <template>
   <div v-if="!$route.meta.nonLayout" class="common-layout">
-    <el-header class="main-header">企业管理系统</el-header>
+    <el-header class="main-header">企业管理系统
+    </el-header>
     <el-container class="container">
       <el-aside class="aside">
         <Menu/>
       </el-aside>
       <el-container class="container">
         <el-header class="header">{{ currentHeader }}</el-header>
+        <div class="header-message" v-if="headerMessage.visible">
+          <el-alert
+              :title="headerMessage.text"
+              :type="headerMessage.type"
+              show-icon
+              closable
+              @close="clearMessage"
+          />
+        </div>
         <el-main class="main">
           <router-view/>
         </el-main>
@@ -18,16 +28,52 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "DynamicLayout",
-  computed: {
-    // 通过路由 meta 动态获取 Header 信息
-    currentHeader() {
-      return this.$route.meta.header || "默认标题";
-    },
-  },
+<script setup>
+
+import {useRoute} from "vue-router";
+import {provide, computed, reactive} from "vue";
+
+const route = useRoute()
+const currentHeader = computed(() => route.meta.header || "默认标题");
+// 消息状态管理
+const headerMessage = reactive({
+  visible: false, // 是否显示消息
+  text: "",       // 消息内容
+  type: "success"
+});
+
+// 显示消息
+const showMessage = (text) => {
+  headerMessage.text = text;
+  headerMessage.visible = true;
+  headerMessage.type = "success";
+
+  // 自动隐藏消息
+  setTimeout(() => {
+    headerMessage.visible = false;
+  }, 3000);
 };
+
+// 显示错误
+const showError = (text) => {
+  headerMessage.text = text;
+  headerMessage.visible = true;
+  headerMessage.type = "error";
+
+  // 自动隐藏消息
+  setTimeout(() => {
+    headerMessage.visible = false;
+  }, 5000);
+};
+
+provide("showMessage", showMessage);
+provide("showError", showError);
+
+// 清除消息
+const clearMessage = () => {
+  headerMessage.visible = false;
+};
+
 
 </script>
 
@@ -35,6 +81,7 @@ export default {
 header {
   line-height: 1.5;
 }
+
 
 @media (min-width: 300px) {
   .aside {
@@ -72,6 +119,10 @@ header {
     justify-content: center;
     height: 100%;
     width: 100%;
+  }
+
+  .header-message {
+    text-align: center;
   }
 }
 

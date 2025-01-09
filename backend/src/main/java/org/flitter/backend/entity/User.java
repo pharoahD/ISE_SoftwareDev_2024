@@ -45,7 +45,6 @@ public class User {
     @JsonIgnore
     private Set<Task> tasks = new HashSet<>();
 
-
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;  // 使用id计算hashCode

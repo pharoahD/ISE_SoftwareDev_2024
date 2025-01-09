@@ -47,7 +47,7 @@ const searchManagers = async () => {
     managers.value = (await http.post("/api/user/search",
         {username: searchQuery.value})).data;
   } catch (error) {
-    console.error("Failed to fetch managers:", error);
+    showError("Failed to fetch managers:", error);
   }
 }
 

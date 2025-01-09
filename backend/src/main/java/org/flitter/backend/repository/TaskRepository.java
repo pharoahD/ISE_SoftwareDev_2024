@@ -18,7 +18,11 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findByAssignees(User assignees);
 
+    // 查找某个项目下的所有任务数量
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.belongedProject.id = :projectId")
+    Long countAllTasksByProjectId(Long projectId);
 
-    // 用SQL，找出end时间快到了的
-    // 还有某个人被指定了的
+    // 查找某个项目下已完成的任务数量
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.belongedProject.id = :projectId AND t.isCompleted = true")
+    Long countCompletedTasksByProjectId(Long projectId);
 }

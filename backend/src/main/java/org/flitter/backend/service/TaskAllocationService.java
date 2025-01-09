@@ -5,6 +5,7 @@ import org.flitter.backend.dto.TaskForGanttDTO;
 import org.flitter.backend.entity.Project;
 import org.flitter.backend.entity.Task;
 import org.flitter.backend.entity.User;
+import org.flitter.backend.repository.PreMessageRepository;
 import org.flitter.backend.repository.ProjectRepository;
 import org.flitter.backend.repository.TaskRepository;
 import org.flitter.backend.repository.UserRepository;
@@ -18,25 +19,39 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.flitter.backend.dto.TaskAssigneeDTO;
+import java.util.HashSet;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TaskAllocationService{
-    @Autowired
-    private SecurityConfig securityConfig;
+    private final SecurityConfig securityConfig;
+    private final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
+    private final PreMessageRepository preMessageRepository;
+    private final ProcessService processService;
 
     @Autowired
-    private TaskRepository taskRepository;
+    public TaskAllocationService(SecurityConfig securityConfig,
+                                 TaskRepository taskRepository,
+                                 ProjectRepository projectRepository,
+                                 UserRepository userRepository,
+                                 PreMessageRepository preMessageRepository,
+                                 ProcessService processService) {
+        this.securityConfig = securityConfig;
+        this.taskRepository = taskRepository;
+        this.projectRepository = projectRepository;
+        this.userRepository = userRepository;
+        this.preMessageRepository = preMessageRepository;
+        this.processService = processService;
+    }
 
-    @Autowired
-    private ProjectRepository projectRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    public Task allocateTask(Task task, TaskAssigneeDTO taskAss) {
+    @Transactional
+    public Task allocateTask(TaskAssigneeDTO taskAss) throws Exception{
         //判空都在controller中实现了
         User user = securityConfig.getCurrentUser();
-        Task existingTask = taskRepository.findByTitle(task.getTitle());
+        Task task = new Task();
+        Task existingTask = taskRepository.findByTitle(taskAss.getTitle());
         if(existingTask != null) {
             throw new IllegalArgumentException("任务名已经被使用过");
         }
@@ -44,31 +59,62 @@ public class TaskAllocationService{
         //判断权限
 
         //校验任务的分配人信息是否有效
+        Set<User> validAssignees = new HashSet<>();
         for (User assignee : taskAss.getAssignees()) {
             if (assignee == null) {
-                throw new IllegalArgumentException("任务的分配人信息不能为空");
+                throw new Exception("任务的分配人信息不能为空");
             }
 
             // 校验assignee是否有有效的id
             if (assignee.getId() == null) {
-                throw new IllegalArgumentException("任务的分配人信息不完整：缺少用户ID");
+                throw new Exception("A false user id");
+            } else {
+                // 校验assignee是否已存在于数据库
+                User existingUser = userRepository.findById(assignee.getId()).orElse(null);
+                if (existingUser == null) {
+                    throw new Exception("任务的分配人 " + assignee.getId() + " 不存在");
+                }
+                else{
+                    validAssignees.add(existingUser);
+                }
+            }
+        }
+
+        Project existingProject = projectRepository.findById(taskAss.getBelongedProject().getId()).orElse(null);
+        if (existingProject == null) {
+            throw new Exception("没有找到对应的项目");
+        }
+        task.setBelongedProject(existingProject);
+        //如果前端没有输入发布者信息，那就把当前操作人当成发布
+        if (task.getPublisher() == null || task.getPublisher().getId() == null) {
+            User nowUser = securityConfig.getCurrentUser();
+            task.setPublisher(nowUser);
+        }
+        else{
+            User existingUser = userRepository.findById(task.getPublisher().getId()).orElse(null);
+            if (existingUser != null) {
+                task.setPublisher(existingUser);
+            }
+            else{
+                throw new Exception("not a right user");
             }
 
-            // 校验assignee是否已存在于数据库
-//            User existingUser = userRepository.findById(assignee.getId()).orElse(null);
-//            if (existingUser == null) {
-//                throw new IllegalArgumentException("任务的分配人 " + assignee.getId() + " 不存在");
-//            }
         }
 
-        //如果前端没有输入发布者信息，那就把当前操作人当成发布人
-        if(task.getPublisher()==null) {
-            task.setPublisher(user);
+        if (taskAss.getStartDate().isAfter(task.getEndDate())){
+            throw new Exception("time error");
         }
-        task.setAssignees(taskAss.getAssignees());
+        task.setTitle(taskAss.getTitle());
+        task.setDescription(taskAss.getDescription());
+        task.setStartDate(taskAss.getStartDate());
+        task.setEndDate(taskAss.getEndDate());
+        task.setAssignees(validAssignees);
+        task.setIsCompleted(false);      //任务还未完成
+        task.setPercentCompleted(0.0);   //任务完成程度百分之0;
         // 创建任务
         taskRepository.save(task);
-        //InitPreMessage(task);
+        processService.computeProgress(task.getBelongedProject().getId());
+        InitPreMessage(task);
         return task;
     }
 
@@ -109,24 +155,27 @@ public class TaskAllocationService{
         return taskRepository.findByAssignees(tuser);
     }
 
-    public boolean ModifyTask(Task task, TaskAssigneeDTO taskAss) {
+    public boolean ModifyTask(TaskAssigneeDTO taskAss) {
         User currentUser= securityConfig.getCurrentUser();
         //获取任务
-        Task existingTask = (Task) taskRepository.findById(task.getId())
+        Task existingTask = (Task) taskRepository.findById(taskAss.getId())
                 .orElseThrow(()->new NoSuchElementException("Task not found"));
 
         //权限验证
 
         //修改任务内容
-        existingTask.setTitle(task.getTitle()!=null?task.getTitle():existingTask.getTitle());
+        existingTask.setTitle(taskAss.getTitle()!=null?taskAss.getTitle():existingTask.getTitle());
         existingTask.setAssignees(taskAss.getAssignees()!=null?taskAss.getAssignees():existingTask.getAssignees());
-        existingTask.setEndDate(task.getEndDate()!=null?task.getEndDate():existingTask.getEndDate());
-        existingTask.setDescription(task.getDescription()!=null?task.getDescription():existingTask.getDescription());
+        existingTask.setEndDate(taskAss.getEndDate()!=null?taskAss.getEndDate():existingTask.getEndDate());
+        existingTask.setStartDate(taskAss.getStartDate()!=null?taskAss.getStartDate():existingTask.getStartDate());
+        existingTask.setDescription(taskAss.getDescription()!=null?taskAss.getDescription():existingTask.getDescription());
+        existingTask.setIsCompleted(taskAss.getIsCompleted()!=null?taskAss.getIsCompleted():existingTask.getIsCompleted());
+        existingTask.setPercentCompleted(taskAss.getPercentCompleted()!=null?taskAss.getPercentCompleted():existingTask.getPercentCompleted());
 
         //保存修改
         taskRepository.save(existingTask);
+        processService.computeProgress(taskAss.getBelongedProject().getId());
         return true;    // TODO : ?
-
     }
 
     public void InitPreMessage(Task task){
@@ -139,6 +188,7 @@ public class TaskAllocationService{
         preSendingMessage.setUserIds(taskUser);
         preSendingMessage.setTime(task.getStartDate());
         preSendingMessage.setCreatedAt(task.getEndDate());
+        preMessageRepository.save(preSendingMessage);
     }
 
     public List<TaskForGanttDTO> getGanttElement(Long id) {
@@ -153,9 +203,11 @@ public class TaskAllocationService{
 
         List<Task> tasks = taskRepository.findByBelongedProjectId(id);
 
-
         List<TaskForGanttDTO> taskGantt = new ArrayList<>();
-
+        for(Task task : tasks) {
+            TaskForGanttDTO gantt=new TaskForGanttDTO(task.getId(),task.getTitle(),task.getStartDate(),task.getEndDate(),task.getIsCompleted());
+            taskGantt.add(gantt);
+        }
 
         return taskGantt;
 

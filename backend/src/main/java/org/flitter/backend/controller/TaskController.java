@@ -30,27 +30,25 @@ public class TaskController {
     //分配任务，也即创建任务
 
     @PostMapping("/allocation")
-    public ResponseEntity<?> allocation(@RequestBody TaskModify taskModify) {
-        Task task = taskModify.getTask();
-        TaskAssigneeDTO taskAssigneeDTO = taskModify.getTaskAssigneeDTO();
-        if (task.getTitle() == null || task.getTitle().isEmpty() ||
-                task.getDescription() == null || task.getDescription().isEmpty()) {
+    public ResponseEntity<?> allocation(@RequestBody TaskAssigneeDTO taskAssigneeDTO) {
+        if (taskAssigneeDTO.getTitle() == null || taskAssigneeDTO.getTitle().isEmpty() ||
+                taskAssigneeDTO.getDescription() == null || taskAssigneeDTO.getDescription().isEmpty()) {
             return ResponseEntity.badRequest().body("任务的名称和描述不能为空");
         }
         /*if (task.getPublisher() == null) {
             return ResponseEntity.badRequest().body("任务的发布人不能为空");
         }*/
-        if (task.getStartDate() == null || task.getEndDate() == null) {
+        if (taskAssigneeDTO.getStartDate() == null || taskAssigneeDTO.getEndDate() == null) {
             return ResponseEntity.badRequest().body("任务的开始截止时间不能为空");
         }
-        if (task.getAssignees() == null) {
+        if (taskAssigneeDTO.getAssignees() == null) {
             return ResponseEntity.badRequest().body("任务的分配人信息不能为空");
         }
         if (taskAssigneeDTO.getBelongedProject() == null) {
             return ResponseEntity.badRequest().body("任务所属的项目不能为空");
         }
         try {
-            var task1 = TaskAllocation.allocateTask(task, taskAssigneeDTO);
+            var task1 = TaskAllocation.allocateTask(taskAssigneeDTO);
             return ResponseEntity.ok(task1);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -59,15 +57,13 @@ public class TaskController {
 
     //修改任务信息
     @PostMapping("/modify")
-    public ResponseEntity<?> modify(@RequestBody TaskModify taskModify) {
-        Task task = taskModify.getTask();
-        TaskAssigneeDTO taskAssigneeDTO = taskModify.getTaskAssigneeDTO();
-        if (task.getId() == null) {
+    public ResponseEntity<?> modify(@RequestBody TaskAssigneeDTO taskAssigneeDTO) {
+        if (taskAssigneeDTO.getId() == null) {
             return ResponseEntity.badRequest().body("所修改的任务id不能为空");
         }
         Task task1;
         try{
-            task1 = TaskAllocation.getTaskByID(task.getId());
+            task1 = TaskAllocation.getTaskByID(taskAssigneeDTO.getId());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -75,7 +71,7 @@ public class TaskController {
             return ResponseEntity.badRequest().body("所修改的任务不存在");
         }
         //调用service层修改任务
-        boolean modified = TaskAllocation.ModifyTask(task, taskAssigneeDTO);
+        boolean modified = TaskAllocation.ModifyTask(taskAssigneeDTO);
         if (modified) {
             return ResponseEntity.ok("任务修改成功");
         } else {
@@ -149,17 +145,17 @@ public class TaskController {
     }
 
     //通过输入项目编号，获取需要绘画该项目的甘特图所需的任务列表
-//    @GetMapping("/gantt")
-//    public ResponseEntity<?> getGantt(@RequestParam Long id) {
-//        User user = SecurityConfig.getCurrentUser();
-//        List<TaskForGanttDTO> tasks;
-//
-//        try{
-//            tasks = TaskAllocation.getGanttElement(id);
-//        }catch(IllegalArgumentException e){
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//
-//        return ResponseEntity.ok(tasks);
-//    }
+    @GetMapping("/gantt")
+    public ResponseEntity<?> getGantt(@RequestParam Long id) {
+        User user = SecurityConfig.getCurrentUser();
+        List<TaskForGanttDTO> tasks;
+
+        try{
+            tasks = TaskAllocation.getGanttElement(id);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+        return ResponseEntity.ok(tasks);
+    }
 }

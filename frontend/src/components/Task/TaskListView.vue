@@ -1,9 +1,10 @@
 <template>
+  <div class="task-list">
     <!-- 显示任务列表 -->
     <el-table :data="tasks" style="width: 100%">
       <el-table-column prop="title" label="任务名称" width="180"></el-table-column>
       <el-table-column prop="description" label="任务描述" width="300"></el-table-column>
-      <el-table-column prop="priority" label="优先级" width="100"></el-table-column>
+      <el-table-column prop="priority" label="完成进度" width="100"></el-table-column>
       <el-table-column prop="startDate" label="开始时间" width="150"></el-table-column>
       <el-table-column prop="endDate" label="结束时间" width="150"></el-table-column>
 
@@ -14,14 +15,14 @@
         </template>
       </el-table-column>
     </el-table>
-
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import {ref, onMounted, inject} from 'vue';
 import axios from 'axios';
-import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
+import {useRouter} from 'vue-router';
+import {ElMessage} from 'element-plus';
 
 const router = useRouter();
 const tasks = ref([]);  // 存储任务列表
@@ -32,15 +33,15 @@ const fetchTasks = async () => {
     const response = await axios.get('http://localhost:8081/api/task/getbyworkerid');
     tasks.value = response.data; // 将获取的数据赋值给 tasks
   } catch (error) {
-    const showError= inject('获取任务列表失败');
+    // 显示错误消息
+    ElMessage.error('获取任务列表失败');
   }
 };
 
 // 跳转到任务详情页
 const goToTaskDetail = (taskId) => {
-  router.push({ path: `/task/detail/${taskId}` }); // 手动构建路径
+  router.push({path: `/task/detail/${taskId}`}); // 手动构建路径
 };
-
 
 // 页面加载时获取任务列表
 onMounted(() => {
@@ -52,6 +53,4 @@ onMounted(() => {
 .task-list {
   padding: 20px;
 }
-
-
 </style>

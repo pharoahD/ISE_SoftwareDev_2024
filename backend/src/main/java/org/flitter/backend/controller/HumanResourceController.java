@@ -1,5 +1,6 @@
 package org.flitter.backend.controller;
 
+import org.flitter.backend.dto.ProjectIdDTO;
 import org.flitter.backend.dto.UserIDRoleDTO;
 import org.flitter.backend.dto.UserSearchRequestDTO;
 import org.flitter.backend.service.HumanResourceService;
@@ -23,7 +24,6 @@ public class HumanResourceController {
     public ResponseEntity<?> findAll() {
         return ResponseEntity.ok(humanresourceService.fetchAllUsersIdNameWithLimit1000());
     }
-
     @PostMapping("/search")
     public ResponseEntity<?> findByName(@RequestBody UserSearchRequestDTO usdto) {
         if (usdto.getUsername() == null || usdto.getUsername().isEmpty()) {
@@ -32,7 +32,17 @@ public class HumanResourceController {
         return ResponseEntity.ok(humanresourceService.searchUserIdNameLimit1000(usdto.getUsername()));
     }
 
-    @PostMapping("/byproject")
+    @PostMapping("/allbyproject")
+    public ResponseEntity<?> findAllByProject(@RequestBody ProjectIdDTO projectIdDTO) {
+        if (projectIdDTO.getId() == null) {
+            return ResponseEntity.badRequest().body("查询项目id不能为空");
+        }
+        try {
+            return ResponseEntity.ok(humanresourceService.fetchALlUserWhichParticipatedIn(projectIdDTO.getId()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     
     @GetMapping("/role/all")

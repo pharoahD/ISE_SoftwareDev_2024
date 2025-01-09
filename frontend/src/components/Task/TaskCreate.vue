@@ -1,8 +1,8 @@
 <script setup>
-import {ref, onMounted} from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import {useRouter} from 'vue-router';
-import {ElMessage} from 'element-plus';
+import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 
 const router = useRouter();
 
@@ -17,16 +17,17 @@ const users = ref([]); // 存储项目成员
 // 存储项目列表
 const projects = ref([]);
 
-// 获取项目列表
 const fetchProjects = async () => {
   try {
-    const response = await axios.get('http://localhost:8081/api/project/list/all'); // 获取项目列表
+    const response = await axios.get('http://localhost:8081/api/project/list/participated');
+    console.log(response.data); // 打印数据
     projects.value = response.data.map(project => ({
       id: project.id,
-      projectName: project.projectName // 映射项目名称
+      projectName: project.projectName,
     }));
   } catch (error) {
-    ElMessage.error('获取项目列表失败');
+    alert('获取项目列表失败');
+    console.error(error); // 打印错误信息
   }
 };
 
@@ -41,18 +42,14 @@ const fetchUsers = async () => {
       username: user.username  // 映射为 name
     }));
   } catch (error) {
-    alert('获取成员列表失败');
+    ElMessage.error('获取成员列表失败');
   }
 };
 
-onMounted(() => {
-  fetchUsers();  // 页面加载时获取成员列表
-});
-
 // 创建任务
 const createTask = async () => {
-  if (!taskTitle.value || !taskDescription.value || !taskPriority.value || !taskStartDate.value || !taskEndDate.value || !selectedProjectId.value) {
-    ElMessage.error('请填写完整任务信息');
+  if (!taskTitle.value || !taskDescription.value  || !taskStartDate.value || !taskEndDate.value || !selectedProjectId.value) {
+    alert('请填写完整任务信息');
     return;
   }
 
@@ -66,29 +63,27 @@ const createTask = async () => {
       id: selectedProjectId.value,  // 获取选中的项目ID
     },
     assignees: assignedMembers.value.map(member => ({
-      id: member.id,  // 确保 assignedMembers 是成员对象数组，每个成员对象包含 id
+      id: member,  // 只传递成员的 id
     })),
   };
 
   try {
     await axios.post('http://localhost:8081/api/task/allocation', requestData);
-    alert('任务创建成功');
-    await router.push(''); // 跳转到任务列表页
+    ElMessage.success('任务创建成功');
+    await router.push('/task-list'); // 跳转到任务列表页，假设任务列表路径是 '/task-list'
   } catch (error) {
-    alert('创建任务失败');
+    ElMessage.error('创建任务失败');
   }
 };
 
 onMounted(() => {
-  fetchUsers();
+  fetchUsers();  // 页面加载时获取成员列表
   fetchProjects();  // 加载项目列表
 });
 </script>
 
 <template>
-  <el-form
-    label-width="80px"
-  >
+  <el-form label-width="80px">
     <!-- 任务名称 -->
     <el-form-item label="任务名称">
       <el-input v-model="taskTitle" placeholder="请输入任务名称"></el-input>
@@ -97,15 +92,6 @@ onMounted(() => {
     <!-- 任务描述 -->
     <el-form-item label="任务描述">
       <el-input v-model="taskDescription" placeholder="请输入任务描述" type="textarea"></el-input>
-    </el-form-item>
-
-    <!-- 优先级 -->
-    <el-form-item label="优先级">
-      <el-select v-model="taskPriority" placeholder="选择优先级">
-        <el-option label="高" value="高"></el-option>
-        <el-option label="中" value="中"></el-option>
-        <el-option label="低" value="低"></el-option>
-      </el-select>
     </el-form-item>
 
     <!-- 开始时间 -->
@@ -148,7 +134,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
 .el-form-item button {
   margin-top: 20px; /* 增加按钮上方的间距 */
 }

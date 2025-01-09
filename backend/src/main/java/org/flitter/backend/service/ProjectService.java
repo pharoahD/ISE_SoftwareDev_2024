@@ -2,6 +2,7 @@ package org.flitter.backend.service;
 
 import jakarta.transaction.Transactional;
 import org.flitter.backend.config.SecurityConfig;
+import org.flitter.backend.dto.ProjectAddParticipantDTO;
 import org.flitter.backend.dto.ProjectCreateDTO;
 import org.flitter.backend.dto.ProjectListDTO;
 import org.flitter.backend.entity.Project;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class ProjectService {
@@ -33,7 +36,7 @@ public class ProjectService {
         if (projectRepository.findById(id).isPresent()) {
             return projectRepository.findById(id).get();
         } else {
-            return null;        // may unsafe
+            return null;
         }
     }
 
@@ -67,7 +70,6 @@ public class ProjectService {
 
     @Transactional
     public List<ProjectListDTO> getAllProjects() {
-        System.err.println("getAllProjects : " + projectRepository.findAllProjectsDTO());
         return projectRepository.findAllProjectsDTO();
     }
 
@@ -75,5 +77,54 @@ public class ProjectService {
     public List<ProjectListDTO> getAllParticipatedProjects() {
         User currentUser = securityConfig.getCurrentUser();
         return projectRepository.findProjectListDTOByParticipant(currentUser);
+    }
+
+
+    public Project updateProject(ProjectListDTO dto) {
+        Project project = projectRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("未找到对应的项目"));
+
+        if (dto.getProjectName() != null) {
+            project.setProjectName(dto.getProjectName());
+        }
+        if (dto.getDescription() != null) {
+            project.setDescription(dto.getDescription());
+        }
+        if (dto.getStartDate() != null) {
+            project.setStartDate(dto.getStartDate());
+        }
+        if (dto.getEndDate() != null) {
+            project.setEndDate(dto.getEndDate());
+        }
+        if (dto.getPriority() != null) {
+            project.setPriority(dto.getPriority());
+        }
+        if (dto.getProgress() != null) {
+            project.setProgress(dto.getProgress());
+        }
+        if (dto.getIsCompleted() != null) {
+            project.setIsCompleted(dto.getIsCompleted());
+        }
+
+        return projectRepository.save(project);
+    }
+
+    @Transactional
+    public Project addParticipants(ProjectAddParticipantDTO dto) {
+        Project project = projectRepository.findById(dto.getProjectId())
+                .orElseThrow(() -> new IllegalArgumentException("未找到对应的项目"));
+
+        Iterable<User> iterableUsers = userRepository.findAllById(dto.getUserIds()); // 提供的 Iterable<User>
+        List<User> userList = StreamSupport.stream(iterableUsers.spliterator(), false)
+                .toList();
+        if (userList.isEmpty()) {
+            throw new IllegalArgumentException("未找到对应的用户");
+        }
+
+        for (User user : userList) {
+            project.getParticipants().add(user);
+        }
+
+        return projectRepository.save(project);
     }
 }

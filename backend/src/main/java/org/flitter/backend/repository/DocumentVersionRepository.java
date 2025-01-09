@@ -12,4 +12,6 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
 
     // 根据文档ID和版本号查找特定版本
     DocumentVersion findByBelongsToDocumentAndVersion(Document document, String version);
+
+    DocumentVersion findByFilename(String filename);
 }

@@ -12,13 +12,16 @@ import java.util.List;
 public class Document {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long id;
     private String name;
 
     @ManyToOne
     @JoinColumn(name = "project_id")    // 为外键制定了一个列名
     private Project belongsToProject;
+
+    @ManyToOne
+    @JoinColumn(name = "task_id")
+    private Task belongsToTask;
 
     @JsonIgnore
     @OneToMany(mappedBy = "belongsToDocument", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

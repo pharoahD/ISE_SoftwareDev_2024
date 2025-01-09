@@ -108,7 +108,7 @@ header {
   }
 
   .main-header {
-    background: #aafbeb;
+    background: #aaf5ff;
     height: 70px;
     line-height: 70px;
   }

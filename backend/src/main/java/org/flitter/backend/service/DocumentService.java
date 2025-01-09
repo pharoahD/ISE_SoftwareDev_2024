@@ -2,18 +2,16 @@ package org.flitter.backend.service;
 
 import org.flitter.backend.entity.Document;
 import org.flitter.backend.entity.DocumentVersion;
-import org.flitter.backend.repository.DocumentRepository;
-import org.flitter.backend.repository.DocumentVersionRepository;
+import org.flitter.backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.flitter.backend.entity.User;
+import org.flitter.backend.entity.Task;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.flitter.backend.entity.Project;
-import org.flitter.backend.repository.ProjectRepository;
-import org.flitter.backend.repository.UserRepository;
 
 @Service
 public class DocumentService {
@@ -30,15 +28,26 @@ public class DocumentService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TaskRepository taskRepository;
+
     // 创建新文档
-    public Document createDocument(String name, Long projectId) throws Exception{
+    public Document createDocument(String name, Long projectId, Long taskId) throws Exception{
         Document document = new Document();
         document.setName(name);
+        Task task = taskRepository.findById(taskId).orElse(null);
+        if (task == null) {
+            throw new Exception("task not found");
+        }
         Project project = projectRepository.findById(projectId).orElse(null);
         if (project == null) {
-            throw new Exception("Project not found");
+            throw new Exception("project not found");
+        }
+        if (task.getBelongedProject().getId() != project.getId()) {
+            throw new Exception("task belongs error");
         }
         document.setBelongsToProject(project);
+        document.setBelongsToTask(task);
         documentRepository.save(document);
         return document;
     }

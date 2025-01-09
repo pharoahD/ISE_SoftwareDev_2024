@@ -14,5 +14,5 @@ public class TaskForGanttDTO {
     private String Title;          //任务名称
     private LocalDate StartDate;   //任务开始时间
     private LocalDate EndDate;     //任务结束时间
-    private boolean isCompleted;   //任务是否结束
+    private Boolean isCompleted;   //任务是否结束
 }

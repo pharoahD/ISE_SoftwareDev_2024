@@ -51,6 +51,10 @@
     </div>
   </div>
 
+  <!-- 发送信息图标 -->
+  <div class="send-email-button" @click="showSendDialog = true">
+    <el-icon><Document /></el-icon>
+  </div>
 
   <!-- 消息弹窗 -->
   <el-dialog
@@ -137,6 +141,41 @@
 <!--  </template>-->
   </el-dialog>`
 
+  <el-dialog
+      title="发送消息"
+      v-model="showSendDialog"
+      width="40%"
+  >
+    <el-form>
+      <!-- 选择用户 -->
+      <el-form-item label="选择用户">
+        <el-select v-model="selectedUser" placeholder="请选择用户">
+          <el-option
+              v-for="user in userList"
+              :key="user.id"
+              :label="user.username"
+              :value="user.id"
+          ></el-option>
+        </el-select>
+      </el-form-item>
+
+      <!-- 邮件内容 -->
+      <el-form-item label="消息内容">
+        <el-input
+            v-model="emailContent"
+            type="textarea"
+            placeholder="请输入消息内容"
+            rows="4"
+        ></el-input>
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <el-button @click="showSendDialog = false">取消</el-button>
+      <el-button type="primary" @click="sendEmail">发送</el-button>
+    </template>
+  </el-dialog>
+
 </template>
 
 <script lang="ts" setup>
@@ -149,6 +188,13 @@ import {
 } from '@element-plus/icons-vue'
 import { reactive, ref ,onMounted, computed} from 'vue'
 import axios from 'axios';
+import 'element-plus/theme-chalk/el-message.css'
+import { ElMessage } from 'element-plus'
+
+onMounted(() => {
+  fetchMessages();
+  fetchUsers()
+})
 
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
@@ -240,9 +286,48 @@ const markAsRead = async (messageId: number) => {
   }
 }
 
-onMounted(() => {
-  fetchMessages()
-})
+// 发送邮件功能
+const showSendDialog = ref(false)
+const userList = reactive([])
+const selectedUser = ref(null)
+const emailContent = ref('')
+
+// 获取用户列表
+const fetchUsers = async () => {
+  try {
+    const response = await axios.get('http://localhost:8081/api/user/all')
+    userList.splice(0, userList.length, ...response.data)
+  } catch (error) {
+    console.error('获取用户列表失败:', error)
+  }
+}
+
+// 发送邮件
+const sendEmail = async () => {
+  if (!selectedUser.value || !emailContent.value.trim()) {
+    return alert('请选择用户并填写内容')
+  }
+  try {
+    await axios.post('http://localhost:8081/api/messages/send', {
+      receiverId: [selectedUser.value], // 用户ID需以数组形式传递
+      message: [emailContent.value]    // 消息内容需以数组形式传递
+    })
+    ElMessage({
+      message: '消息发送成功',
+      type: 'success',
+    })
+    showSendDialog.value = false
+    emailContent.value = ''
+    selectedUser.value = null
+  } catch (error) {
+    console.error('发送消息失败:', error)
+    ElMessage({
+      message: '发送消息失败',
+      type: 'error',
+    })
+  }
+  await fetchMessages()
+}
 
 </script>
 
@@ -290,5 +375,24 @@ onMounted(() => {
   align-items: center;
   border-radius: 50%;
   font-weight: bold;
+}
+.send-email-button {
+  position: fixed;
+  bottom: 20px;
+  left: 90px;
+  width: 50px;
+  height: 50px;
+  background-color: #67c23a;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  cursor: pointer;
+  font-size: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.send-email-button:hover {
+  background-color: #85e377;
 }
 </style>

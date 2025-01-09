@@ -1,6 +1,10 @@
 package org.flitter.backend.controller;
 
+import org.flitter.backend.dto.ProjectAddParticipantDTO;
 import org.flitter.backend.dto.ProjectCreateDTO;
+import org.flitter.backend.dto.ProjectIdDTO;
+import org.flitter.backend.dto.ProjectListDTO;
+import org.flitter.backend.entity.Project;
 import org.flitter.backend.entity.enums.Priority;
 import org.flitter.backend.service.ProjectService;
 
@@ -49,14 +53,56 @@ public class ProjectController {
 
     @GetMapping("/list/all")// 看到所有的项目列表
     public ResponseEntity<?> getProjectList() {
-        System.err.println(projectService.getAllProjects());
         return ResponseEntity.ok(projectService.getAllProjects());
     }
 
     @GetMapping("/list/participated")
     public ResponseEntity<?> getParticipatedProjects() {
-        System.err.println("participanted : " + projectService.getAllProjects());
         return ResponseEntity.ok(projectService.getAllParticipatedProjects());
+    }
+
+    @PostMapping("/get")
+    public ResponseEntity<?> getProjectDetail(@RequestBody ProjectIdDTO projectIdDTO) {
+        if (projectIdDTO == null || projectIdDTO.getId() == null) {
+            return ResponseEntity.badRequest().body("项目id不能为空");
+        }
+        Project project = projectService.getProject(projectIdDTO.getId());
+        if (project == null) {
+            return ResponseEntity.badRequest().body("查找不到项目");
+        }
+        return ResponseEntity.ok(projectService.getProject(projectIdDTO.getId()));
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<?> updateProject(@RequestBody ProjectListDTO projectUpdateDTO) {
+        if (projectUpdateDTO.getId() == null) {
+            return ResponseEntity.badRequest().body("项目ID不能为空");
+        }
+        if (projectUpdateDTO.getEndDate() != null && projectUpdateDTO.getEndDate().isBefore(projectUpdateDTO.getStartDate())) {
+            return ResponseEntity.badRequest().body("截止日期不能早于开始日期");
+        }
+
+        try {
+            Project updatedProject = projectService.updateProject(projectUpdateDTO);
+            return ResponseEntity.ok(updatedProject);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/add-participant")
+    public ResponseEntity<?> addParticipants(@RequestBody ProjectAddParticipantDTO dto) {
+        if (dto.getProjectId() == null || dto.getUserIds() == null || dto.getUserIds().isEmpty()) {
+            return ResponseEntity.badRequest().body("项目ID和用户ID列表不能为空");
+        }
+
+        try {
+            Project updatedProject = projectService.addParticipants(dto);
+            return ResponseEntity.ok(updatedProject);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 //    @PostMapping("/search")//通过项目名称来查看具体项目信息

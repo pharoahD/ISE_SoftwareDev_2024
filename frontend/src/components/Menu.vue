@@ -9,9 +9,9 @@
       >
         <el-sub-menu index="1">
           <template #title>
-            <el-icon>
-              <el-icon type="question-circle-outline" />
-            </el-icon>
+<!--            <el-icon>-->
+<!--              <el-icon type="question-circle-outline" />-->
+<!--            </el-icon>-->
             <span>项目管理</span>
           </template>
           <el-menu-item index="/project/list">
@@ -25,20 +25,29 @@
         <!-- 任务管理 -->
         <el-sub-menu index="2">
           <template #title>
-            <el-icon>
-              <icon-menu/>
-            </el-icon>
             <span>任务管理</span>
           </template>
           <el-menu-item index="/task/create">
             创建任务
           </el-menu-item>
           <el-menu-item index="/task/list">
-            任务列表
+            被指派任务列表
           </el-menu-item>
         </el-sub-menu>
 
         <el-sub-menu index="3">
+          <template #title>
+            <span>文档管理</span>
+          </template>
+          <el-menu-item index="/document/list">
+            文档查看
+          </el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu index="4">
+          <template #title>
+            <span>消息</span>
+          </template>
           <el-menu-item index="/message">
             消息管理
           </el-menu-item>

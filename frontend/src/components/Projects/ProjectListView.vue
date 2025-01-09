@@ -68,7 +68,7 @@ onMounted(async () => {
       <el-table-column fixed="right" label="进入项目" min-width="120">
         <template #default="{ row }">
           <el-button link type="primary" size="small" @click="selectRow(row)">
-            *
+            查看
           </el-button>
         </template>
       </el-table-column>

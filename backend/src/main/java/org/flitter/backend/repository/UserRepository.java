@@ -1,6 +1,7 @@
 package org.flitter.backend.repository;
 
 import org.flitter.backend.dto.UserIDRoleDTO;
+import org.flitter.backend.entity.Project;
 import org.flitter.backend.entity.User;
 
 import org.flitter.backend.dto.UserNameIdDTO;
@@ -14,6 +15,8 @@ import java.util.List;
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
     User findByUsername(String username);
+
+    List<UserNameIdDTO> findAllByProjectsContains(Project project);
 
     @Query("SELECT new org.flitter.backend.dto.UserNameIdDTO(p.id, p.username) FROM User p " +
             "WHERE p.id <> 1")

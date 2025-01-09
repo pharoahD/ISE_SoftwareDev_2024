@@ -5,11 +5,10 @@ import org.flitter.backend.entity.Document;
 import org.flitter.backend.entity.DocumentVersion;
 import org.flitter.backend.service.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
+
 import java.util.List;
 
 @RestController
@@ -34,6 +33,7 @@ public class DocumentController {
     static class DocumentInit{
         String name;
         Long projectId;
+        Long taskId;
     }
 
     @Data
@@ -48,16 +48,17 @@ public class DocumentController {
         try {
             String name = doc_temp.getName();
             Long projectId = doc_temp.getProjectId();
-            Document document = documentService.createDocument(name, projectId);
+            Long taskId = doc_temp.getTaskId();
+            Document document = documentService.createDocument(name, projectId, taskId);
             return ResponseEntity.ok("成功创建文档");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.toString());
         }
     }
 
-    // 获取指定项目下所有类型文档
+    // 获取指定任务下所有类型文档
     @PostMapping("/projects")
-    public ResponseEntity<?> getDocumentsByProject(@RequestBody DocumentAccess doc_access) {
+    public ResponseEntity<?> getDocumetsByProject(@RequestBody DocumentAccess doc_access) {
         try {
             Long projectId = doc_access.getProjectId();
             List<Document> documents = documentService.getDocumentsByProject(projectId);

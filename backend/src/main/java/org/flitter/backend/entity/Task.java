@@ -46,6 +46,12 @@ public class Task {
     @Column(nullable = false)
     private LocalDate endDate;
 
+    @Column(nullable = false)
+    private Boolean isCompleted; //项目是否完成
+    
+    @Column(nullable = false)
+    private Double percentCompleted; //完成程度
+
 //    @OneToMany(map
     // TODO:  相关的commentdapter
 

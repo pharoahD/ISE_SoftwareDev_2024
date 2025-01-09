@@ -3,6 +3,7 @@ package org.flitter.backend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.flitter.backend.entity.enums.Priority;
 
 import java.time.LocalDate;

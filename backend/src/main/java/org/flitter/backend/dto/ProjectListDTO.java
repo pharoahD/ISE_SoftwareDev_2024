@@ -20,5 +20,4 @@ public class ProjectListDTO {
     private Priority priority;
     private Double progress;
     private Boolean isCompleted;
-    private User manager;
 }

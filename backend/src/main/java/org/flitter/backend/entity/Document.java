@@ -3,14 +3,15 @@ package org.flitter.backend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Data
 @Entity
 public class Document {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     private Long id;
     private String name;
@@ -23,4 +24,17 @@ public class Document {
     @OneToMany(mappedBy = "belongsToDocument", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     // 这里mappedBy说明通过Document的belongsToDocument
     private List<DocumentVersion> versions;
+
+    @Column(name = "shared_user_names")
+    private String sharedUserNames;
+
+    // 获取共享用户名称列表
+    public List<String> getSharedUserNamesList() {
+        return new ArrayList<>(Arrays.asList(this.sharedUserNames.split(",")));
+    }
+
+    // 设置共享用户名称列表
+    public void setSharedUserNamesList(List<String> sharedUserNamesList) {
+        this.sharedUserNames = String.join(",", sharedUserNamesList);
+    }
 }

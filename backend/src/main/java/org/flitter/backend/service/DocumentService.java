@@ -10,6 +10,7 @@ import org.flitter.backend.entity.User;
 import org.flitter.backend.entity.Task;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.flitter.backend.entity.Project;
 
@@ -53,12 +54,17 @@ public class DocumentService {
     }
 
     // 获取指定项目下所有文档
-    public List<Document> getDocumentsByProject(Long projectId) throws Exception{
+    public List<String> getDocumentsByProject(Long projectId) throws Exception{
         Project project = projectRepository.findById(projectId).orElse(null);
         if (project == null) {
             throw new Exception("Project not found");
         }
-        return documentRepository.findByBelongsToProject(project);
+        List<Document> documents = documentRepository.findByBelongsToProject(project);
+        List<String> documentNames = new ArrayList<>();
+        for (Document document : documents) {
+            documentNames.add(document.getName());
+        }
+        return documentNames;
     }
 
     // 上传文档的新版本

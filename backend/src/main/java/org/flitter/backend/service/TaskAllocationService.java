@@ -100,8 +100,7 @@ public class TaskAllocationService{
             }
 
         }
-
-        if (taskAss.getStartDate().isAfter(task.getEndDate())){
+        if (taskAss.getStartDate().isAfter(taskAss.getEndDate())){
             throw new Exception("time error");
         }
         task.setTitle(taskAss.getTitle());

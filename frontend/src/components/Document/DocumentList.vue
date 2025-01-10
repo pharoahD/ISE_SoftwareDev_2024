@@ -87,7 +87,7 @@ export default {
             this.documents = response.data.map(doc => ({
               id: doc.id,
               name: doc.name,
-              project: doc.belongsToProject.projectName,
+
             }));
           })
           .catch(error => {

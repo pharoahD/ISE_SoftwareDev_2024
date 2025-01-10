@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.util.List;
 
 @RestController
@@ -56,13 +57,13 @@ public class DocumentController {
         }
     }
 
-    // 获取指定任务下所有类型文档
+    // 获取指定项目下所有类型文档
     @PostMapping("/projects")
     public ResponseEntity<?> getDocumetsByProject(@RequestBody DocumentAccess doc_access) {
         try {
             Long projectId = doc_access.getProjectId();
-            List<Document> documents = documentService.getDocumentsByProject(projectId);
-            return ResponseEntity.ok(documents);
+            List<String> documentsName = documentService.getDocumentsByProject(projectId);
+            return ResponseEntity.ok(documentsName);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.toString());
         }

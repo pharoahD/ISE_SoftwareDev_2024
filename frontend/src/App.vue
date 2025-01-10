@@ -5,6 +5,7 @@
     <el-container class="container">
       <el-aside class="aside">
         <Menu/>
+        <LazyMessageView/>
       </el-aside>
       <el-container class="container">
         <el-header class="header">{{ currentHeader }}</el-header>
@@ -31,7 +32,11 @@
 <script setup>
 
 import {useRoute} from "vue-router";
-import {provide, computed, reactive} from "vue";
+import {provide, computed, reactive, defineAsyncComponent} from "vue";
+
+const LazyMessageView = defineAsyncComponent(() =>
+    import("@/components/Message/Message.vue")
+);
 
 const route = useRoute()
 const currentHeader = computed(() => route.meta.header || "默认标题");

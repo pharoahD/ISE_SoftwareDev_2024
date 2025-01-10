@@ -70,7 +70,7 @@ const createTask = async () => {
   try {
     await axios.post('http://localhost:8081/api/task/allocation', requestData);
     ElMessage.success('任务创建成功');
-    await router.push('/task-list'); // 跳转到任务列表页，假设任务列表路径是 '/task-list'
+    await router.push('/task/list'); // 跳转到任务列表页
   } catch (error) {
     ElMessage.error('创建任务失败');
   }

@@ -17,8 +17,9 @@ import java.util.Set;
 @AllArgsConstructor
 public class TaskAssigneeDTO {
     private Long id;
+    private Long projectId;
     private Project belongedProject;
-    private Set<User> assignees;
+    private Set<User> assignees = new HashSet<>();
     private String title;
     private String description;
     private User publisher;
@@ -26,4 +27,7 @@ public class TaskAssigneeDTO {
     private LocalDate endDate;
     private Boolean isCompleted; //项目是否完成
     private Double percentCompleted; //完成程度
+
+    public TaskAssigneeDTO() {
+    }
 }

@@ -2,9 +2,12 @@ package org.flitter.backend.config;
 
 import org.flitter.backend.entity.User;
 import org.flitter.backend.repository.UserRepository;
+import org.flitter.backend.utils.JwtAuthenticationFilter;
+import org.flitter.backend.utils.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,15 +27,29 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     private final UserRepository userRepository;
-    public SecurityConfig(@Autowired UserRepository userRepository) {
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
+    @Autowired
+    public SecurityConfig(UserRepository userRepository,
+                          JwtTokenProvider jwtTokenProvider,
+                          @Lazy AuthenticationManager authenticationManager,
+                          CustomAccessDeniedHandler customAccessDeniedHandler,
+                          CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {      // TODO:想办法消除这个lazy注解
         this.userRepository = userRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.authenticationManager = authenticationManager;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
     }
 
     @Bean
@@ -41,19 +58,28 @@ public class SecurityConfig {
         http.cors(cors -> cors.configurationSource(
                 corsConfigurationSource()
         ));
-//        http.formLogin(Customizer.withDefaults());
+
+        http.exceptionHandling(ex -> {
+            ex.accessDeniedHandler(customAccessDeniedHandler)
+                    .authenticationEntryPoint(customAuthenticationEntryPoint);
+        });
+
         // 配置访问
         http.authorizeHttpRequests(auth ->
                 auth.requestMatchers("/api/auth/**").permitAll()    // 开启登录
                         .requestMatchers("/api/project/**").authenticated() // 仅用户角色可访问项目接口
                         .requestMatchers("/api/user/**").authenticated()
+                        .requestMatchers("/api/project/create").hasAuthority("project:create")
+                        .requestMatchers("/api/projects/**").hasAuthority("project:read")
+                        .requestMatchers("/api/users/role/update").hasAuthority("user:read")
                         .anyRequest().authenticated());
 
         http.sessionManagement(session -> {
-                    session.maximumSessions(1);
-                    session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
-                });
-        http.securityContext(securityContext -> securityContext.requireExplicitSave(false));
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        });
+        http.addFilter(new JwtAuthenticationFilter(
+                authenticationManager, jwtTokenProvider));
+
         return http.build();
     }
 
@@ -84,7 +110,10 @@ public class SecurityConfig {
             return new UserDetails() {
                 @Override
                 public Collection<? extends SimpleGrantedAuthority> getAuthorities() {
-                    return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+                    return user.getRoles()
+                            .stream().flatMap(role -> role.getPermissions().stream())
+                            .map(permission -> new SimpleGrantedAuthority(permission.getPermission()))
+                            .collect(Collectors.toSet());
                 }
 
                 @Override

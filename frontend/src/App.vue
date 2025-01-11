@@ -32,6 +32,8 @@
 <script setup>
 
 import {useRoute} from "vue-router";
+import {provide, computed, reactive, onMounted, defineAsyncComponent} from "vue";
+import {eventBus} from "@/scripts/eventBus.js";
 import {provide, computed, reactive, defineAsyncComponent} from "vue";
 
 const LazyMessageView = defineAsyncComponent(() =>
@@ -79,7 +81,11 @@ const clearMessage = () => {
   headerMessage.visible = false;
 };
 
-
+onMounted(() => {
+  eventBus.on("error", (message) => {
+    showError(message);
+  });
+})
 </script>
 
 <style scoped>

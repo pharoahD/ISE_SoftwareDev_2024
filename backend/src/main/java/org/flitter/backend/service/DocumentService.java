@@ -1,5 +1,6 @@
 package org.flitter.backend.service;
 
+import org.flitter.backend.controller.DocumentController;
 import org.flitter.backend.entity.Document;
 import org.flitter.backend.entity.DocumentVersion;
 import org.flitter.backend.repository.*;
@@ -10,6 +11,7 @@ import org.flitter.backend.entity.User;
 import org.flitter.backend.entity.Task;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.flitter.backend.entity.Project;
 
@@ -58,7 +60,8 @@ public class DocumentService {
         if (project == null) {
             throw new Exception("Project not found");
         }
-        return documentRepository.findByBelongsToProject(project);
+        List<Document> documents = documentRepository.findByBelongsToProject(project);
+        return documents;
     }
 
     // 上传文档的新版本
@@ -97,11 +100,15 @@ public class DocumentService {
         if (document == null) {
             throw new Exception("Document not found.");
         }
-        DocumentVersion documentVersion = documentVersionRepository.findById(documentId).orElse(null);
+//        DocumentVersion documentVersion = documentVersionRepository.findById(documentId).orElse(null);
+//        if (documentVersion == null) {
+//            throw new Exception("Document version not found.");
+//        }
+        DocumentVersion documentVersion = documentVersionRepository.findByBelongsToDocumentAndVersion(document, version);
         if (documentVersion == null) {
             throw new Exception("Document version not found.");
         }
-        return documentVersionRepository.findByBelongsToDocumentAndVersion(document, version);
+        return documentVersion;
     }
 
     // 下载指定文档的指定版本
@@ -110,7 +117,7 @@ public class DocumentService {
         if (documentVersion != null) {
             return documentVersion.getFileData(); // 返回文件的二进制数据
         }
-        throw new IllegalArgumentException("Version not found.");
+        throw new Exception("Version not found.");
     }
 
 

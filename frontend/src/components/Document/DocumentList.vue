@@ -1,6 +1,6 @@
 <template>
   <!-- 选择项目下拉菜单 -->
-<div v-if="projects.length">
+  <div v-if="projects.length">
     <h2>选择项目</h2>
     <el-select v-model="selectedProjectId" placeholder="请选择项目" @change="fetchDocuments">
       <el-option
@@ -25,12 +25,19 @@
   <!-- 显示文档版本 -->
   <div v-if="documentVersions.length">
     <h3>文档版本</h3>
-    <ul>
-      <li v-for="version in documentVersions" :key="version.id">
-        <span>{{ version.version }} - {{ version.filename }}</span>
-        <button @click="downloadDocument(version)">下载</button>
-      </li>
-    </ul>
+    <el-row :gutter="20">
+      <el-col :span="8" v-for="version in documentVersions" :key="version.id">
+        <el-card :body-style="{ padding: '20px' }">
+          <div style="font-weight: bold;">{{ version.version }} - {{ version.name }}</div>
+          <div>
+            <el-icon :name="getFileIcon(version.name)"></el-icon> <!-- 根据文件名显示图标 -->
+          </div>
+          <div style="margin-top: 10px;">
+            <button @click="downloadDocument(version)" class="download-btn">下载</button>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 
   <!-- 加载中提示 -->
@@ -39,18 +46,18 @@
 
 <script>
 import axios from 'axios';
-import { ElSelect, ElOption } from 'element-plus'; // 引入Element Plus组件
+import {ElSelect, ElOption, ElCard, ElRow, ElCol, ElIcon} from 'element-plus'; // 引入Element Plus组件
 
 export default {
   data() {
     return {
-      projects: [],            // 存储项目列表
+      projects: [], // 存储项目列表
       selectedProjectId: null, // 选中的项目ID
-      documents: [],           // 存储文档列表
+      documents: [], // 存储文档列表
       selectedDocumentId: null, // 选中的文档ID
-      documentVersions: [],    // 存储文档版本列表
-      documentContent: null,   // 存储单个文档的详细内容
-      loading: false,          // 加载状态
+      documentVersions: [], // 存储文档版本列表
+      documentContent: null, // 存储单个文档的详细内容
+      loading: false, // 加载状态
     };
   },
   methods: {
@@ -83,11 +90,9 @@ export default {
             projectId: this.selectedProjectId // 传递 projectId 作为请求体参数
           })
           .then(response => {
-            // 成功获取文档列表后
             this.documents = response.data.map(doc => ({
-              id: doc.id,
+              id: doc.documentId,
               name: doc.name,
-              project: doc.belongsToProject.projectName,
             }));
           })
           .catch(error => {
@@ -122,10 +127,13 @@ export default {
       this.loading = true;
       axios
           .post('http://localhost:8081/api/documents/projects/versions/download', {
-            documentId: version.id, // 传递 documentId 和 version 信息
-            version: version.version,
+            documentId: version.documentId,
+            version: version.version
           }, {
-            responseType: 'blob', // 设置响应类型为 blob，用于文件下载
+            headers: {
+              'Content-Type': 'application/json', // 确保请求头是正确的
+            },
+            responseType: 'blob' // 设置响应类型为 blob，用于文件下载
           })
           .then(response => {
             // 创建一个临时的下载链接
@@ -143,7 +151,22 @@ export default {
             this.loading = false;
           });
     },
+
+    // 根据文件名获取文件图标
+    getFileIcon(filename) {
+      if (filename.endsWith('.pdf')) {
+        return 'el-icon-file-pdf';
+      } else if (filename.endsWith('.docx') || filename.endsWith('.doc')) {
+        return 'el-icon-file-word';
+      } else if (filename.endsWith('.xlsx') || filename.endsWith('.xls')) {
+        return 'el-icon-file-excel';
+      } else if (filename.endsWith('.txt')) {
+        return 'el-icon-file';
+      }
+      return 'el-icon-document'; // 默认图标
+    }
   },
+
   mounted() {
     // 页面加载时获取用户参与的项目列表
     this.fetchProjects();
@@ -167,5 +190,43 @@ li {
 
 button {
   margin-left: 10px;
+}
+
+/* 自定义下载按钮 */
+.download-btn {
+  background-color: #409EFF;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.download-btn:hover {
+  background-color: #66b1ff;
+}
+
+.el-card {
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+}
+
+.el-card .el-card__header {
+  font-weight: bold;
+  font-size: 16px;
+  padding: 10px;
+}
+
+.el-card .el-card__body {
+  font-size: 14px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.el-card .el-card__body .el-icon {
+  font-size: 24px;
+  margin-bottom: 10px;
 }
 </style>

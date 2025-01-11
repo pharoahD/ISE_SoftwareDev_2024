@@ -37,7 +37,7 @@ const selectRow = async (row) => {
   showMessage("正在进入项目: " + row.projectName);
   await router.push({
     name: "ProjectDetail",
-    params: { id: row.id }
+    params: {id: row.id}
   })
 };
 
@@ -47,38 +47,45 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="Array.isArray(projects) && projects.length > 0">
-    <el-table :data="projects" style="width: 100%">
-      <el-table-column fixed prop="projectName" label="项目名称" width="150"/>
-      <el-table-column prop="startDate" label="开始时间" width="150"/>
-      <el-table-column prop="endDate" label="截止时间" width="150"/>
-      <el-table-column prop="description" label="项目描述" width="300"/>
-      <el-table-column prop="priority" label="优先级" width="120">
-        <template #default="scope">
-          <span>{{ mapPriority(scope.row.priority) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="isCompleted" label="完成情况" width="120">
-        <template #default="{ row }">
-          <span>{{ row.isCompleted ? '是' : '否' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="progress" label="进度" width="120"/>
-      <el-table-column fixed="right" label="进入项目" min-width="120">
-        <template #default="{ row }">
-          <el-button link type="primary" size="small" @click="selectRow(row)">
-            查看
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-  </div>
-  <div v-else>
-    <span>正在加载项目列表</span>
-  </div>
-
+  <el-table :data="projects" style="width: 100%">
+    <el-table-column fixed prop="projectName" label="项目名称" width="150"/>
+    <el-table-column prop="startDate" label="开始时间" width="150"/>
+    <el-table-column prop="endDate" label="截止时间" width="150"/>
+    <el-table-column prop="description" label="项目描述" width="300">
+      <template #default="scope">
+        <el-tooltip class="item" effect="dark" :content="scope.row.description" placement="top">
+          <span class="ellipsis-text">{{ scope.row.description }}</span>
+        </el-tooltip>
+      </template>
+    </el-table-column>
+    <el-table-column prop="priority" label="优先级" width="120">
+      <template #default="scope">
+        <span>{{ mapPriority(scope.row.priority) }}</span>
+      </template>
+    </el-table-column>
+    <el-table-column prop="isCompleted" label="完成情况" width="120">
+      <template #default="{ row }">
+        <span>{{ row.isCompleted ? '是' : '否' }}</span>
+      </template>
+    </el-table-column>
+    <el-table-column prop="progress" label="进度" width="120"/>
+    <el-table-column fixed="right" label="进入项目" min-width="120">
+      <template #default="{ row }">
+        <el-button link type="primary" size="small" @click="selectRow(row)">
+          查看
+        </el-button>
+      </template>
+    </el-table-column>
+  </el-table>
 </template>
 
 <style scoped>
-
+.ellipsis-text {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
 </style>

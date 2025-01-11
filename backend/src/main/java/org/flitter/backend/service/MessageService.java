@@ -7,12 +7,12 @@ import org.flitter.backend.entity.User;
 import org.flitter.backend.repository.MessageRepository;
 import org.flitter.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+//import org.springframework.mail.javamail.JavaMailSender;
+//import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.flitter.backend.repository.PreMessageRepository;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.MessagingException;
+//import jakarta.mail.internet.MimeMessage;
+//import jakarta.mail.MessagingException;
 import org.flitter.backend.entity.PreSendingMessage;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,6 +23,7 @@ import org.flitter.backend.repository.TaskRepository;
 import org.flitter.backend.entity.Task;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 
 
 @Service
@@ -36,8 +37,8 @@ public class MessageService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private JavaMailSender mailSender;  // 自动注入 JavaMailSender
+//    @Autowired
+//    private JavaMailSender mailSender;  // 自动注入 JavaMailSender
 
     @Autowired
     private PreMessageRepository preMessageRepositoryRepository;
@@ -154,22 +155,22 @@ public class MessageService {
         sendMessage(users, messages);
     }
 
-    // 发送邮件通知的逻辑
-    private void sendEmailNotification(String to, String subject, String text) {
-        try {
-            // 创建一个 MimeMessage 对象
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-
-            // 创建 MimeMessageHelper 对象
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-            helper.setTo(to);  // 设置收件人
-            helper.setSubject(subject);  // 设置邮件主题
-            helper.setText(text, true);  // 设置邮件内容（true 表示支持 HTML 格式）
-
-            // 发送邮件
-            mailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            e.printStackTrace();  // 异常处理，可以根据需要做日志记录或者其他处理
-        }
-    }
+//    // 发送邮件通知的逻辑
+//    private void sendEmailNotification(String to, String subject, String text) {
+//        try {
+//            // 创建一个 MimeMessage 对象
+//            MimeMessage mimeMessage = mailSender.createMimeMessage();
+//
+//            // 创建 MimeMessageHelper 对象
+//            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+//            helper.setTo(to);  // 设置收件人
+//            helper.setSubject(subject);  // 设置邮件主题
+//            helper.setText(text, true);  // 设置邮件内容（true 表示支持 HTML 格式）
+//
+//            // 发送邮件
+//            mailSender.send(mimeMessage);
+//        } catch (MessagingException e) {
+//            e.printStackTrace();  // 异常处理，可以根据需要做日志记录或者其他处理
+//        }
+//    }
 }

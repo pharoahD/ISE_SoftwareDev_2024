@@ -123,7 +123,18 @@ public class TaskController {
             if (!project.getParticipants().contains(user)) {//若此时查询人员不是项目组内部人员，则无法现实任务内容
                 return ResponseEntity.status(403).build();
             }*/
-        return ResponseEntity.ok(task);//若没问题，咋返回该任务。
+        TaskAssigneeDTO taskAssigneeDTO = new TaskAssigneeDTO();
+        taskAssigneeDTO.setId(task.getId());
+        taskAssigneeDTO.setTitle(task.getTitle());
+        taskAssigneeDTO.setDescription(task.getDescription());
+        //taskAssigneeDTO.setAssignees(task.getAssignees());
+        taskAssigneeDTO.setProjectId(task.getBelongedProject().getId());
+        taskAssigneeDTO.setStartDate(task.getStartDate());
+        taskAssigneeDTO.setEndDate(task.getEndDate());
+        taskAssigneeDTO.setPublisher(task.getPublisher());
+        taskAssigneeDTO.setIsCompleted(task.getIsCompleted());
+        taskAssigneeDTO.setPercentCompleted(task.getPercentCompleted());
+        return ResponseEntity.ok(taskAssigneeDTO);//若没问题，咋返回该任务。
     }
 
     @GetMapping("/getbyworkerid")//通过员工id查找其所参与的项目

@@ -85,7 +85,7 @@ onMounted(() => {
 const rules = {
   project_name: [
     {required: true, message: "请输入项目名", trigger: "blur"},
-    {min: 3, max: 50, message: "长度在 3 到 50 个字符", trigger: "blur"},
+    {min: 3, max: 25, message: "长度在 3 到 25 个字符", trigger: "blur"},
   ],
   startDate: [{required: true, message: "请选择开始日期", trigger: "change"}],
   endDate: [{required: true, message: "请选择结束日期", trigger: "change"}],

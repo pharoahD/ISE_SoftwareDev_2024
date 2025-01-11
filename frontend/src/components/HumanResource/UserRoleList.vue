@@ -1,4 +1,4 @@
-<script setup>
+  <script setup>
 import { ref, onMounted, inject } from "vue";
 import http from "@/http/request.js";
 import { useRouter } from "vue-router";

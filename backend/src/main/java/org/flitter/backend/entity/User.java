@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.flitter.backend.entity.enums.Role;
+import org.flitter.backend.entity.Role;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -30,10 +30,11 @@ public class User {
     @Column(nullable = false)
     private String email;
 
-    // 使用enum类型的角色 用于基本权限
-    @Enumerated(EnumType.STRING)    // 存储枚举名称
-    @Column(nullable = false)
-    private Role role;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+    inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles;
 
     // 所属项目
     @ManyToMany(mappedBy = "participants")

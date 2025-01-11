@@ -27,16 +27,38 @@
       <p>任务描述：{{ task.description }}</p>
     </div>
 
-
-
-    <!-- 评论功能 -->
+    <!-- 评论显示区域 -->
     <el-divider>评论</el-divider>
+    <div v-if="task.logs && task.logs.length > 0">
+      <div v-for="(log, index) in task.logs" :key="index" class="comment-item">
+        <p><strong>{{ log.publisher }}:</strong> <span>{{ log.timestamp }}</span></p>
+        <p>{{ log.content }}</p>
+        <hr />
+      </div>
+    </div>
+
+    <!-- 评论输入区 -->
     <el-input
         type="textarea"
         v-model="comment"
         placeholder="写评论，提及人使用 @"
         rows="3"
     ></el-input>
+
+    <!-- 文件上传区 -->
+    <el-upload
+        ref="upload"
+        class="upload-demo"
+        action="http://localhost:8081/api/comment/add/file"
+        :on-success="handleFileSuccess"
+        :on-error="handleFileError"
+        :show-file-list="false"
+        :auto-upload="false"
+    :data="uploadData"
+    >
+    <el-button size="small" type="primary">上传文件</el-button>
+    </el-upload>
+
     <el-button type="primary" @click="submitComment">提交评论</el-button>
   </div>
 </template>
@@ -57,17 +79,6 @@ const taskId = route.params.taskId;
 const fetchTaskDetail = async (taskId) => {
   try {
     const response = await axios.get(`http://localhost:8081/api/task/getbyid?id=${taskId}`);
-    // 假设返回的数据结构是:
-    // {
-    //   id: 1,
-    //   title: "Test Task70",
-    //   description: "This is a description of the test task.",
-    //   publisher: { id: 5, username: "王柯", ... },
-    //   startDate: "2025-03-02",
-    //   endDate: "2025-04-07",
-    //   percentCompleted: 0.0,
-    // }
-
     // 更新任务信息
     task.value = {
       id: response.data.id,
@@ -117,38 +128,76 @@ const updateProgress = async () => {
 };
 
 
+// 获取评论
+const fetchComments = async () => {
+  try {
+    const response = await axios.get(`http://localhost:8081/api/comment/get?id=${taskId}`);
+    task.value.logs = response.data.map((comment) => ({
+      timestamp: new Date(comment.datetime).toLocaleString(),
+      content: comment.stringComment,
+      publisher: comment.publisher.username, // 假设有评论发布者的用户名
+    }));
+  } catch (error) {
+    console.error('获取评论失败', error);
+  }
+};
 
+// 处理文件上传成功
+const handleFileSuccess = (response, file, fileList) => {
+  // 文件上传成功后，更新 uploadData 数据
+  file.value = file;
+  uploadData.value = {
+    documentId: response.data.documentId, // 假设返回的文件ID
+    taskId: task.value.id,
+    version: 1, // 版本可以根据需要处理
+    file: file,
+  };
+  ElMessage.success('文件上传成功');
+};
 
+// 处理文件上传失败
+const handleFileError = (err, file, fileList) => {
+  ElMessage.error('文件上传失败');
+};
 // 提交评论
 const submitComment = async () => {
   if (!comment.value.trim()) {
     ElMessage.warning('评论内容不能为空');
     return;
   }
+
   try {
-    const response = await axios.post('http://localhost:8081/api/task/addcomment', {
-      taskId: task.value.id,
-      content: comment.value,
+    const response = await axios.post('http://localhost:8081/api/comment/add/string', {
+      stringComment: comment.value,  // 评论内容
+      belongedTask: {
+        id: task.value.id  // 任务 ID
+      }
     });
-    if (response.data.success) {
+
+    // 判断接口返回的 id 是否存在，若存在表示评论提交成功
+    if (response.data && response.data.id) {
       task.value.logs.push({
         timestamp: new Date().toISOString(),
         content: comment.value,
       });
-      comment.value = '';
+      comment.value = '';  // 清空评论框
       ElMessage.success('评论提交成功');
     } else {
       ElMessage.error('评论提交失败');
     }
   } catch (error) {
+    console.error('提交评论时发生错误:', error);
     ElMessage.error('评论提交失败');
   }
 };
 
-// 页面加载时初始化
+
+
+
+// 页面加载时初始化任务信息和评论
 onMounted(() => {
-  // alert(taskId);
   fetchTaskDetail(taskId);
+  fetchComments();
 });
 </script>
 
@@ -159,5 +208,16 @@ onMounted(() => {
 
 .task-progress {
   margin-bottom: 20px;
+}
+
+.comment-item {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.comment-item p {
+  margin: 5px 0;
 }
 </style>

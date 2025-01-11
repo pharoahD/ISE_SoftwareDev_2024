@@ -214,3 +214,7 @@ onMounted(() => {
   fetchCandidates();
 });
 </script>
+
+<style scoped>
+
+</style>

@@ -45,7 +45,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import {ElSelect, ElOption, ElCard, ElRow, ElCol, ElIcon} from 'element-plus'; // 引入Element Plus组件
 
 export default {
@@ -64,7 +63,7 @@ export default {
     // 获取当前用户参与的项目
     fetchProjects() {
       this.loading = true;
-      axios
+      http
           .get('http://localhost:8081/api/project/list/participated')
           .then(response => {
             this.projects = response.data.map(project => ({
@@ -85,10 +84,9 @@ export default {
       if (!this.selectedProjectId) return; // 如果没有选择项目，直接返回
 
       this.loading = true;
-      axios
-          .post('http://localhost:8081/api/documents/projects', {
-            projectId: this.selectedProjectId // 传递 projectId 作为请求体参数
-          })
+      http.post('http://localhost:8081/api/documents/projects', {
+        projectId: this.selectedProjectId // 传递 projectId 作为请求体参数
+      })
           .then(response => {
             this.documents = response.data.map(doc => ({
               id: doc.documentId,
@@ -107,10 +105,9 @@ export default {
     viewDocument(documentId) {
       if (!documentId) return;
       this.loading = true;
-      axios
-          .post('http://localhost:8081/api/documents/projects/versions', {
-            documentId: documentId,
-          })
+      http.post('http://localhost:8081/api/documents/projects/versions', {
+        documentId: documentId,
+      })
           .then(response => {
             this.documentVersions = response.data; // 获取文档版本信息
           })
@@ -126,7 +123,7 @@ export default {
     downloadDocument(version) {
       this.loading = true;
       axios
-          .post('http://localhost:8081/api/documents/projects/versions/download', {
+          .post('/api/documents/projects/versions/download', {
             documentId: version.documentId,
             version: version.version
           }, {

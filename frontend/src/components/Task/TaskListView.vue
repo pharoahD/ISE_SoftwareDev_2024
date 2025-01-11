@@ -4,10 +4,10 @@
     <el-table :data="tasks" style="width: 100%">
       <el-table-column prop="title" label="任务名称" width="180"></el-table-column>
       <el-table-column prop="description" label="任务描述" width="300"></el-table-column>
-      <el-table-column prop="priority" label="完成进度" width="100"></el-table-column>
+      <el-table-column prop="percentCompleted" label="完成进度" width="100"></el-table-column>
       <el-table-column prop="startDate" label="开始时间" width="150"></el-table-column>
       <el-table-column prop="endDate" label="结束时间" width="150"></el-table-column>
-
+      <el-table-column prop="isCompleted" label="完成情况" width="100"></el-table-column>
       <!-- 使用 v-slot 来替代 slot-scope -->
       <el-table-column label="操作">
         <template v-slot="scope">
@@ -39,8 +39,12 @@ const fetchTasks = async () => {
 };
 
 // 跳转到任务详情页
-const goToTaskDetail = (taskId) => {
-  router.push({path: `/task/detail/${taskId}`}); // 手动构建路径
+const goToTaskDetail = async (taskId) => {
+  router.push({
+    // path: `/task/detail/${taskId}`,
+    name: "TasksDetail",
+    params: {taskId: taskId}
+  }); // 手动构建路径
 };
 
 // 页面加载时获取任务列表

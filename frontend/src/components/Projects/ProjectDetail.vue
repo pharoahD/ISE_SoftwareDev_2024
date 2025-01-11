@@ -92,6 +92,7 @@
       </el-form>
     </div>
   </div>
+  <TaskOfProjectList :project-id="project.id" />
 </template>
 
 <script setup>
@@ -99,6 +100,7 @@ import {ref, onMounted, inject} from "vue";
 import axios from "axios";
 import {useRoute} from "vue-router";
 import http from "@/http/request.js";
+import TaskOfProjectList from "@/components/Task/TaskOfProjectList.vue";
 
 const showError = inject("showError");
 const showMessage = inject("showMessage");

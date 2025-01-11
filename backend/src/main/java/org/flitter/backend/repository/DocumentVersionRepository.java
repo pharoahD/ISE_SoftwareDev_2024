@@ -14,4 +14,5 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
     DocumentVersion findByBelongsToDocumentAndVersion(Document document, String version);
 
     DocumentVersion findByFilename(String filename);
+
 }

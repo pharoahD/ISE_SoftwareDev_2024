@@ -1,13 +1,13 @@
 <template>
   <div class="task-detail">
     <!-- 任务标题和描述 -->
-    <h2>{{ task.title }}</h2>
-    <p>{{ task.description }}</p>
+    <h2>任务名称：{{ task.title }}</h2>
+
 
     <!-- 任务进度展示 -->
     <div class="task-progress">
-      <p>任务进度: {{ task.progress }}%</p>
-      <el-progress :percentage="task.progress"></el-progress>
+      <p>任务进度: {{ taskProgress }}%</p>
+      <el-progress :percentage="taskProgress"></el-progress>
       <el-input-number
           v-model="taskProgress"
           :min="0"
@@ -15,7 +15,7 @@
           label="更新进度"
           size="small"
       ></el-input-number>
-      <el-button type="primary" @click="updateProgress">更新任务进度</el-button>
+      <el-button :loading="loading" type="primary" @click="updateProgress">更新任务进度</el-button>
     </div>
 
     <!-- 任务详情 -->
@@ -23,21 +23,11 @@
     <div>
       <p><strong>负责人:</strong> {{ task.publisher }}</p>
       <p><strong>创建时间:</strong> {{ task.startDate }}</p>
-      <p><strong>更新时间:</strong> {{ task.updatedAt }}</p>
+      <p><strong>结束时间:</strong> {{ task.endDate }}</p>
+      <p>任务描述：{{ task.description }}</p>
     </div>
 
-    <!-- 时间轴记录 -->
-    <el-divider>任务更新记录</el-divider>
-    <el-timeline>
-      <el-timeline-item
-          v-for="(log, index) in task.logs"
-          :key="index"
-          :timestamp="log.timestamp"
-          placement="top"
-      >
-        {{ log.content }}
-      </el-timeline-item>
-    </el-timeline>
+
 
     <!-- 评论功能 -->
     <el-divider>评论</el-divider>
@@ -51,43 +41,83 @@
   </div>
 </template>
 
+
 <script setup>
 import {ref, onMounted} from 'vue';
 import axios from 'axios';
 import {ElMessage} from 'element-plus';
+import {useRoute} from "vue-router";
 
 const task = ref({});
 const comment = ref('');
 const taskProgress = ref(0);
+const route = useRoute();
+const taskId = route.params.taskId;
 
-// 获取任务详情
 const fetchTaskDetail = async (taskId) => {
   try {
-    const response = await axios.get(`http://localhost:8081/api/task/getbyid/${taskId}`);
-    task.value = response.data;
-    taskProgress.value = response.data.progress; // 初始化任务进度
+    const response = await axios.get(`http://localhost:8081/api/task/getbyid?id=${taskId}`);
+    // 假设返回的数据结构是:
+    // {
+    //   id: 1,
+    //   title: "Test Task70",
+    //   description: "This is a description of the test task.",
+    //   publisher: { id: 5, username: "王柯", ... },
+    //   startDate: "2025-03-02",
+    //   endDate: "2025-04-07",
+    //   percentCompleted: 0.0,
+    // }
+
+    // 更新任务信息
+    task.value = {
+      id: response.data.id,
+      title: response.data.title,
+      description: response.data.description,
+      publisher: response.data.publisher.username, // 负责人直接取用户名
+      startDate: response.data.startDate,
+      endDate: response.data.endDate,
+      isCompleted: response.data.isCompleted,
+      percentCompleted:response.data.percentCompleted,
+    };
+
+    // 初始化任务进度
+    taskProgress.value = task.value.percentCompleted;
   } catch (error) {
     ElMessage.error('获取任务详情失败');
   }
 };
 
-// 更新任务进度
+// 进度更新
 const updateProgress = async () => {
   try {
-    const response = await axios.post('http://localhost:8081/api/task/updateprogress', {
+    // 更新进度相关字段
+    task.value.percentCompleted = taskProgress.value; // 更新进度
+    task.value.isCompleted = taskProgress.value === 1; // 如果进度是 100%，标记为完成
+
+    // 构造发送数据
+    const requestData = {
       id: task.value.id,
-      progress: taskProgress.value,
-    });
-    if (response.data.success) {
-      task.value.progress = taskProgress.value; // 更新本地任务进度
-      ElMessage.success('任务进度更新成功');
-    } else {
-      ElMessage.error('任务进度更新失败');
-    }
+      title: task.value.title,
+      description: task.value.description,
+      startDate: task.value.startDate,
+      endDate: task.value.endDate,
+      isCompleted: task.value.isCompleted, // 如果进度是100%，标记为完成
+      percentCompleted: task.value.percentCompleted, // 任务进度
+      belongedProject: null, // 假设归属项目ID为1，需根据实际情况设置
+      publisher: { id: task.value.publisher.id },
+      assignees: null, // 假设有固定分配人，需根据实际情况设置
+    };
+
+    const response = await axios.post('http://localhost:8081/api/task/modify', requestData);
+
+    ElMessage.success('任务进度更新成功');
   } catch (error) {
     ElMessage.error('任务进度更新失败');
   }
 };
+
+
+
 
 // 提交评论
 const submitComment = async () => {
@@ -117,7 +147,7 @@ const submitComment = async () => {
 
 // 页面加载时初始化
 onMounted(() => {
-  const taskId = 1; // 假设从路由获取的任务ID
+  // alert(taskId);
   fetchTaskDetail(taskId);
 });
 </script>

@@ -1,5 +1,6 @@
 package org.flitter.backend.controller;
 
+import jakarta.annotation.sql.DataSourceDefinition;
 import lombok.Data;
 import org.flitter.backend.entity.Document;
 import org.flitter.backend.entity.DocumentVersion;
@@ -8,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.util.ArrayList;
 import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.util.List;
 
@@ -43,6 +44,18 @@ public class DocumentController {
         String version;
     }
 
+    @Data
+    static class DocumentOutput{
+        Long documentId;
+        String name;
+    }
+
+    @Data
+    static class DocumentVersionOutput{
+        Long documentId;
+        String version;
+        String name;
+    }
     // 创建新文档
     @PostMapping("/create")
     public ResponseEntity<?> createDocument(@RequestBody DocumentInit doc_temp) {
@@ -62,8 +75,15 @@ public class DocumentController {
     public ResponseEntity<?> getDocumetsByProject(@RequestBody DocumentAccess doc_access) {
         try {
             Long projectId = doc_access.getProjectId();
-            List<String> documentsName = documentService.getDocumentsByProject(projectId);
-            return ResponseEntity.ok(documentsName);
+            List<DocumentOutput> documentOutputs = new ArrayList<>();
+            List<Document> documents = documentService.getDocumentsByProject(projectId);
+            for (Document document : documents) {
+                DocumentOutput documentOutput = new DocumentOutput();
+                documentOutput.setDocumentId(document.getId()); // 假设 Document 有 getId() 方法
+                documentOutput.setName(document.getName());
+                documentOutputs.add(documentOutput);
+            }
+            return ResponseEntity.ok(documentOutputs);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.toString());
         }
@@ -88,7 +108,15 @@ public class DocumentController {
         try {
             Long documentId = docversion_access.getDocumentId();
             List<DocumentVersion> versions = documentService.getAllVersions(documentId);
-            return ResponseEntity.ok(versions);
+            List<DocumentVersionOutput> documentVersionOutputs = new ArrayList<>();
+            for (DocumentVersion version : versions) {
+                DocumentVersionOutput documentVersionOutput = new DocumentVersionOutput();
+                documentVersionOutput.setDocumentId(version.getBelongsToDocument().getId());
+                documentVersionOutput.setVersion(version.getVersion());
+                documentVersionOutput.setName(version.getFilename());
+                documentVersionOutputs.add(documentVersionOutput);
+            }
+            return ResponseEntity.ok(documentVersionOutputs);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.toString());
         }

@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.flitter.backend.repository.PreMessageRepository;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.MessagingException;
+//import jakarta.mail.internet.MimeMessage;
+//import jakarta.mail.MessagingException;
 import org.flitter.backend.entity.PreSendingMessage;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,6 +23,7 @@ import org.flitter.backend.repository.TaskRepository;
 import org.flitter.backend.entity.Task;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 
 
 @Service

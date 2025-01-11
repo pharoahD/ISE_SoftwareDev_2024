@@ -11,7 +11,7 @@ import "dhtmlx-gantt/codebase/dhtmlxgantt.css"; // 导入 dhtmlx-gantt 样式
 import gantt from "dhtmlx-gantt"; // 导入 dhtmlx-gantt
 import http from "@/http/request.js"; // 自定义的 HTTP 模块
 import {useRoute} from "vue-router";
-import {fetchProjectDetails} from "@/Scripts/Project.js";
+import {fetchProjectDetails} from "@/scripts/Project.js";
 
 const showMessage = inject("showMessage");
 const showError = inject("showError");

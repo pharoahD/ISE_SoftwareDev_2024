@@ -2,7 +2,9 @@
 import {ref} from 'vue'
 import axios from "axios"
 import {useRouter} from "vue-router"
+import http from "@/http/request.js"
 import "@/assets/login.css"
+import {saveTokens} from "@/scripts/JWTs.js";
 
 const router = useRouter()
 const username = ref("")
@@ -16,11 +18,11 @@ const login = async () => {
     return
   }
   try { // 调用后端登录接口
-    const res = await axios.post('http://localhost:8081/api/auth/login', {
+    const res = await http.post('http://localhost:8081/api/auth/login', {
       username: username.value,
       password: password.value,
     })
-    alert(res.data)
+    saveTokens(res.data);
     await router.push('/project/list')   // 登录成功后转到任务列表
   } catch (error) {
     if (error.response.status === 401) {
@@ -37,7 +39,7 @@ const register = async () => {
     return
   }
   try {
-    await axios.post('http://localhost:8081/api/auth/register', {
+    await axios.http('http://localhost:8081/api/auth/register', {
       username: username.value,
       password: password.value,
       email: email.value,

@@ -27,7 +27,6 @@ const fetchAllProjects = async () => {
     projects.value = response || [];
   } catch (error) {
     showError("获取项目失败" + error.message);
-    window.location.href = "http://localhost/login";
   }
 };
 

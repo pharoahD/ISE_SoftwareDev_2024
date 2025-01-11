@@ -31,7 +31,8 @@
 <script setup>
 
 import {useRoute} from "vue-router";
-import {provide, computed, reactive} from "vue";
+import {provide, computed, reactive, onMounted} from "vue";
+import {eventBus} from "@/scripts/eventBus.js";
 
 const route = useRoute()
 const currentHeader = computed(() => route.meta.header || "默认标题");
@@ -74,7 +75,11 @@ const clearMessage = () => {
   headerMessage.visible = false;
 };
 
-
+onMounted(() => {
+  eventBus.on("error", (message) => {
+    showError(message);
+  });
+})
 </script>
 
 <style scoped>

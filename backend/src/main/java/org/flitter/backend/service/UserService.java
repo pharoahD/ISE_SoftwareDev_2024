@@ -1,7 +1,7 @@
 package org.flitter.backend.service;
 
-import jakarta.annotation.PostConstruct;
-import org.flitter.backend.entity.enums.Role;
+import org.flitter.backend.entity.enums.Permission;
+import org.flitter.backend.utils.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,19 +14,34 @@ import org.springframework.stereotype.Service;
 import org.flitter.backend.repository.UserRepository;
 import org.flitter.backend.entity.User;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final RoleService roleService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     public UserService(UserRepository userRepository,
                        BCryptPasswordEncoder bCryptPasswordEncoder,
-                       AuthenticationManager authenticationManager) {
+                       AuthenticationManager authenticationManager,
+                       RoleService roleService, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.authenticationManager = authenticationManager;
+        this.roleService = roleService;
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
+
+    public List<String> getPermissions(User user) {
+        return user.getRoles().stream()
+                .flatMap(role->role.getPermissions().stream())
+                .map(Permission::getPermission)
+                .collect(Collectors.toList());
     }
 
     // 注册用户
@@ -45,15 +60,17 @@ public class UserService {
             throw new IllegalArgumentException("用户名已经被使用过了");
         }
 
-        // 加密密码，设置角色
+        // 加密密码
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        user.setRole(Role.USER);
 
         // 保存用户
         userRepository.save(user);
+
+        // 设置角色
+        roleService.addRoleToUser(user.getUsername(), "ROLE_USER");
     }
 
-    public void authenticateUser(User loginRequest) {
+    public User authenticateUser(User loginRequest) {
         try {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -62,20 +79,18 @@ public class UserService {
                     )
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
+            return userRepository.findByUsername(loginRequest.getUsername());
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("用户名或者密码不正确");
         }
     }
 
-    @PostConstruct
-    public void init() {    // 创建虚拟用户，用于邮件发送等
-        if (userRepository.findByUsername("System") == null) {
-            User user = new User();
-            user.setUsername("System");
-            user.setEmail("System@system.com");
-            user.setPassword(bCryptPasswordEncoder.encode("system11223344556677"));
-            user.setRole(Role.ADMIN);
-            userRepository.save(user);
+    public String generateNewAccessKey(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new IllegalArgumentException("找不到对应的用户");
         }
+        return jwtTokenProvider.generateAccessToken(user.getUsername(),
+                this.getPermissions(user));
     }
 }

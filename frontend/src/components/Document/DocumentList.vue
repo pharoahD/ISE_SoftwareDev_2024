@@ -45,7 +45,8 @@
 </template>
 
 <script>
-import {ElSelect, ElOption, ElCard, ElRow, ElCol, ElIcon} from 'element-plus'; // 引入Element Plus组件
+import {ElSelect, ElOption, ElCard, ElRow, ElCol, ElIcon} from 'element-plus';
+import http from "@/http/request.js"; // 引入Element Plus组件
 
 export default {
   data() {
@@ -119,27 +120,40 @@ export default {
           });
     },
 
-    // 下载文档
     downloadDocument(version) {
       this.loading = true;
-      axios
-          .post('/api/documents/projects/versions/download', {
-            documentId: version.documentId,
-            version: version.version
-          }, {
-            headers: {
-              'Content-Type': 'application/json', // 确保请求头是正确的
-            },
-            responseType: 'blob' // 设置响应类型为 blob，用于文件下载
-          })
+      http.post('/api/documents/projects/versions/download', {
+        documentId: version.documentId,
+        version: version.version
+      }, {
+        headers: {
+          'Content-Type': 'application/json', // 确保请求头是正确的
+        },
+        responseType: 'arraybuffer' // 使用 arraybuffer 类型，适合下载二进制文件
+      })
           .then(response => {
-            // 创建一个临时的下载链接
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+            console.log(response.data);
+
+            // 获取文件名和扩展名
+            let filename = version.name || 'default_file';
+
+            // 确保文件名包含扩展名
+            if (!filename.includes('.')) {
+              filename += '.docx'; // 默认扩展名为 .docx
+            }
+
+            // 将 arraybuffer 转换为 Blob 对象
+            const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+
+            // 创建下载链接
+            const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', version.filename); // 设置下载文件名为 filename
+            link.setAttribute('download', filename); // 确保下载文件名正确
             document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
           })
           .catch(error => {
             console.error('下载文档失败:', error);
@@ -148,6 +162,10 @@ export default {
             this.loading = false;
           });
     },
+
+
+
+
 
     // 根据文件名获取文件图标
     getFileIcon(filename) {

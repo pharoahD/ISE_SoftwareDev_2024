@@ -1,5 +1,5 @@
-import http from "@/http/request.js";
 import {eventBus} from "@/scripts/eventBus.js";
+import axios from "axios";
 
 
 export const saveTokens = (tokens) => {
@@ -27,7 +27,7 @@ export const refreshAccessToken = async () => {
     }
     try {
         const response =
-            await http.post('/api/auth/refresh',
+            await axios.post('/api/auth/refresh',
                 {refresh_token: refreshToken});
         saveTokens(response.data);
     } catch (error) {

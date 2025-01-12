@@ -116,7 +116,7 @@ public class TaskAllocationService {
         InitPreMessage(task);
         return task;
     }
-
+    @Transactional
     public Task getTaskByID(Long id) { //通过任务id来具体获取一个具体任务
         User user = securityConfig.getCurrentUser();
 
@@ -149,11 +149,12 @@ public class TaskAllocationService {
         if (existingWorker == null) {
             throw new IllegalArgumentException("没有该id对应的员工");
         }
-        User tuser = new User();
-        tuser.setId(existingWorker.getId());
-        return taskRepository.findByAssignees(tuser);
+        //User tuser = new User();
+        //tuser.setId(existingWorker.g
+        return taskRepository.findByAssignees(existingWorker);
     }
 
+    @Transactional
     public boolean ModifyTask(TaskAssigneeDTO taskAss) {
         User currentUser = securityConfig.getCurrentUser();
         //获取任务
@@ -164,12 +165,27 @@ public class TaskAllocationService {
 
         //修改任务内容
         existingTask.setTitle(taskAss.getTitle() != null ? taskAss.getTitle() : existingTask.getTitle());
-        existingTask.setAssignees(taskAss.getAssignees() != null ? taskAss.getAssignees() : existingTask.getAssignees());
+        //existingTask.setAssignees(taskAss.getAssignees() != null ? taskAss.getAssignees() : existingTask.getAssignees());//这样是有问题的，这样会将原来的数据库替换掉，
         existingTask.setEndDate(taskAss.getEndDate() != null ? taskAss.getEndDate() : existingTask.getEndDate());
         existingTask.setStartDate(taskAss.getStartDate() != null ? taskAss.getStartDate() : existingTask.getStartDate());
         existingTask.setDescription(taskAss.getDescription() != null ? taskAss.getDescription() : existingTask.getDescription());
         existingTask.setIsCompleted(taskAss.getIsCompleted() != null ? taskAss.getIsCompleted() : existingTask.getIsCompleted());
         existingTask.setPercentCompleted(taskAss.getPercentCompleted() != null ? taskAss.getPercentCompleted() : existingTask.getPercentCompleted());
+
+        //更新assignees
+        Set<User> currentAssignees = existingTask.getAssignees();
+        Set<User> newAssignees = taskAss.getAssignees();
+
+        if(newAssignees!=null){
+            //找出要添加的的用户
+            Set<User> toAdd = new HashSet<>(newAssignees);
+            toAdd.removeAll(currentAssignees);
+
+            currentAssignees.addAll(toAdd);
+
+            existingTask.setAssignees(currentAssignees);
+        }
+
 
         //保存修改
         taskRepository.save(existingTask);

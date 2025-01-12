@@ -41,6 +41,7 @@ const fetchUsers = async () => {
       id: user.id,
       username: user.username  // 映射为 name
     }));
+
   } catch (error) {
     ElMessage.error('获取成员列表失败');
   }
@@ -66,7 +67,6 @@ const createTask = async () => {
       id: member,  // 只传递成员的 id
     })),
   };
-
   try {
     await http.post('http://localhost:8081/api/task/allocation', requestData);
     ElMessage.success('任务创建成功');

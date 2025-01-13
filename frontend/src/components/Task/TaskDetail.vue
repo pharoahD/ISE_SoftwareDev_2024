@@ -86,22 +86,6 @@
         placeholder="请输入版本号"
         label="版本号"
     ></el-input>
-
-    <!-- 上传按钮 -->
-    <!-- 文件选择 -->
-    <!--    <el-upload-->
-    <!--        ref="upload"-->
-    <!--        class="upload-demo"-->
-    <!--        :action="uploadUrl"-->
-    <!--        :on-success="handleFileSuccess"-->
-    <!--        :on-error="handleFileError"-->
-    <!--        :show-file-list="false"-->
-    <!--        :auto-upload="false"-->
-    <!--        :v-model="uploadData"-->
-    <!--        @change="handleFileChange"-->
-    <!--    >-->
-    <!--      <el-button size="small" type="primary">选择文件</el-button>-->
-    <!--    </el-upload>-->
     <input type="file" @change="handleFileChange"/>
 
     <!-- 上传按钮 -->
@@ -319,6 +303,8 @@ const handleUploadClick = async () => {
       selectedFile = null;
       selectedDocumentId.value = null;
       selectedVersion.value = ''; // 如果有版本选择框，清空它
+      // 刷新页面
+      window.location.reload();  // 刷新页面
     } else {
       ElMessage.error('文件上传失败');
     }
